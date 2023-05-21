@@ -79,5 +79,3 @@ class NodeHeap:
             if node.id == other.id:
                 return True
         return False
-
-    
