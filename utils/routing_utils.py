@@ -1,6 +1,7 @@
 
 import operator
 
+
 def shared_prefix(args):
     """
     Find the shared prefix between the strings.

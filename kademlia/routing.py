@@ -1,12 +1,14 @@
 # Add this file to protocol folder
 
 import asyncio
-import operator
 import heapq
-from collections import OrderedDict
+import operator
 import time
+from collections import OrderedDict
 from itertools import chain
-from routing_utils import shared_prefix, bytes_to_bit_string
+
+from routing_utils import bytes_to_bit_string, shared_prefix
+
 
 class RoutingTable:
 
