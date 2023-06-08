@@ -1,12 +1,15 @@
-import random
 import asyncio
 import logging
+import random
+
+from routing import RoutingTable
+
+import sys
+sys.path.append('auxiliar/')
 
 from protocol.rpc import RPCProtocol
-
-from node import Node
-from routing import RoutingTable
-from utils import digest
+from auxiliar.node import Node
+from auxiliar.utils import digest
 
 log = logging.getLogger(__name__)
 
