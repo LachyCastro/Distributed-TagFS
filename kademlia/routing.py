@@ -1,4 +1,3 @@
-# Add this file to protocol folder
 
 import asyncio
 import heapq
@@ -7,7 +6,10 @@ import time
 from collections import OrderedDict
 from itertools import chain
 
-from routing_utils import bytes_to_bit_string, shared_prefix
+import sys
+sys.path.append('auxiliar/')
+
+from auxiliar import routing_utils
 
 
 class RoutingTable:
@@ -120,7 +122,7 @@ class KBucket:
     
     def depth(self):
         vals = self.nodes.values()
-        sprefix = shared_prefix([bytes_to_bit_string(n.id) for n in vals])
+        sprefix = routing_utils.shared_prefix([routing_utils.bytes_to_bit_string(n.id) for n in vals])
         return len(sprefix)
     
     def is_new_node(self, node):
