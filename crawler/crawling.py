@@ -1,9 +1,10 @@
 import logging
+import sys
 from collections import Counter
 
-from node import Node, NodeHeap
-
-from utils import gather_dict
+sys.path.append('auxiliar/')
+from auxiliar.node import Node, NodeHeap
+from auxiliar.utils import gather_dict
 
 log = logging.getLogger(__name__)
 
