@@ -3,9 +3,11 @@ import pickle
 import sys
 
 sys.path.append('auxiliar/')
-from auxiliar.utils import infix_postfix, ops, parse
+from auxiliar.utils import infix_postfix, ops
+from auxiliar.parser import CommandParser
 from network import Server
 from storage import FileStorage
+
 
 
 async def operation(response, server):
@@ -198,6 +200,8 @@ if __name__ == '__main__':
         print("Usage: python3 client.py <client ip> <client port > <bootstrap routing_node> <bootstrap routing_port>")
         sys.exit(1)
 
+    parser = CommandParser()
+    
     loop = asyncio.get_event_loop()
     server = Server(storage=FileStorage())
     loop.run_until_complete(server.listen(int(sys.argv[2]), sys.argv[1]))
@@ -212,7 +216,7 @@ if __name__ == '__main__':
             inp = input()
             if not len(inp):
                 continue
-            loop.run_until_complete(operation(parse(inp), server))
+            loop.run_until_complete(operation(parser(inp), server))
 
         except Exception as e:
             if e == KeyboardInterrupt:
