@@ -44,7 +44,7 @@ async def download(ip, port, name):
     content = client_tcp.root.download(name)
     if content == 'NF':
         return False
-    with open('probando_get/'+name, "wb") as f:
+    with open('secure/'+name, "wb") as f:
         f.write(content)  
     client_tcp.close()
     return True
