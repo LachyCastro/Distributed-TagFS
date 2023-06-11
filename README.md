@@ -1,92 +1,63 @@
 # Distributed Tag-Base System
 
-## Description
+## Descripción
 
-Distributed Tag-Base System is a distributed system that allows users to store and retrieve files using tags. It is designed to be scalable, fault-tolerant, and highly available. The system is built using a peer-to-peer architecture, where each node in the network acts as both a client and a server. This allows for a decentralized system that can handle large amounts of data and traffic. The system is written in `Python` and is open-source, allowing for contributions from the community.
+El Sistema de Ficheros con Etiquetas Distribuido es un sistema distribuido que permite a los usuarios almacenar y recuperar archivos utilizando etiquetas. Está diseñado para ser escalable y tolerante a fallos. El sistema está construido utilizando una arquitectura peer-to-peer, donde cada nodo en la red actúa como cliente y servidor. Esto permite un sistema descentralizado que puede manejar grandes cantidades de datos y tráfico. El sistema está escrito en `Python` y es de código abierto, lo que permite contribuciones de la comunidad.
 
-#### Architecture
+#### Arquitectura
 
-The system consists of the following components:
+El sistema consta de los siguientes componentes:
 
-- Nodes: Each node in the network is responsible for storing and serving files. Nodes communicate with each other to share information about the files they have and the tags associated with them.
-- Client: The client is responsible for interacting with the user and sending requests to the nodes in the network. The client can upload, download, delete files, and search for files based on tags.
-- Command Parser: The Command Parser is responsible for parsing the user's input and generating a command object that can be executed by the client.
+- Nodos: Cada nodo en la red es responsable de almacenar y brindar archivos. Los nodos se comunican entre sí para compartir información sobre los archivos que tienen y las etiquetas asociadas con ellos.
+- Cliente: El cliente es responsable de interactuar con el usuario y enviar solicitudes a los nodos en la red. El cliente puede cargar, descargar, eliminar y buscar archivos según etiquetas.
+- Parser de comandos: Es responsable de analizar la entrada del usuario y generar un comando que puede ser ejecutado por el cliente.
 
-#### Kademlia Protocol
+#### Protocolo Kademlia
 
-The system uses the `Kademlia` protocol for peer-to-peer communication and distributed hash table (`DHT`) storage.
+El sistema utiliza el protocolo `Kademlia` para comunicación peer-to-peer y almacenamiento de tabla hash distribuida (`DHT`).
 
-The `Kademlia` protocol is a distributed hash table protocol that allows nodes in a network to efficiently locate and retrieve data. It uses a binary tree structure to organize nodes in the network, with each node being responsible for a subset of the keyspace. Nodes communicate with each other to share information about the keys they are responsible for, allowing for efficient routing and lookup of data.
+El protocolo `Kademlia` es un protocolo de tabla hash distribuida que permite a los nodos en una red localizar y recuperar datos de manera eficiente. Utiliza una estructura de árbol binario para organizar los nodos en la red, donde cada nodo es responsable de un subconjunto del espacio de ficheros. Los nodos se comunican entre sí para compartir información sobre las llaves de las que son responsables, lo que permite el enrutamiento y búsqueda eficientes de datos.
 
-In the Distributed Tag-Base System, each node in the network uses the Kademlia protocol to store and retrieve files and their associated tags. When a file is uploaded to the network, it is hashed to generate a key, which is then used to determine which node in the network is responsible for storing the file. The node then stores the file and its associated tags in its local storage.
+En el Sistema de Etiquetas Distribuido, cada nodo en la red utiliza el protocolo Kademlia para almacenar y recuperar archivos y sus etiquetas asociadas. Cuando se carga un archivo en la red, se genera una clave hash, que luego se utiliza para determinar qué nodo en la red es responsable de almacenar el archivo. El nodo almacena el archivo y sus etiquetas asociadas en su almacenamiento local.
 
-When a user searches for files based on tags, the client sends a request to one of the nodes in the network to search for files with the specified tag. The node then uses the `Kademlia` protocol to locate the nodes that are responsible for the keys associated with the tag. The node then sends requests to these nodes to retrieve the files and their associated tags. Once the files and tags have been retrieved, the node returns them to the client.
+Cuando un usuario busca archivos según etiquetas, el cliente envía una solicitud a uno de los nodos en la red para buscar archivos con la etiqueta especificada. El nodo luego utiliza el protocolo `Kademlia` para localizar los nodos que son responsables de las claves asociadas con la etiqueta. El nodo luego envía solicitudes a estos nodos para recuperar los archivos y sus etiquetas asociadas. Una vez que se han recuperado los archivos y las etiquetas, el nodo los envía al cliente.
 
+##### Tolerancia a fallos
 
-##### Fault Tolerance
+El protocolo `Kademlia` asegura la tolerancia a fallos al permitir que los nodos se unan y abandonen la red de manera dinámica sin afectar el sistema en general.
 
-The `Kademlia` protocol ensures fault tolerance in the Distributed Tag-Base System by allowing nodes to join and leave the network dynamically without affecting the overall system.
+Cuando un nodo se une a la red, contacta a otros nodos en la red para determinar su posición en la estructura de árbol binario. Luego, el nodo almacena información sobre los otros nodos que ha contactado en su almacenamiento local. Esta información incluye los IDs de nodo, las direcciones IP y los números de puerto de los otros nodos.
 
-When a node joins the network, it contacts other nodes in the network to determine its position in the binary tree structure. The node then stores information about the other nodes it has contacted in its local storage. This information includes the node IDs, IP addresses, and port numbers of the other nodes.
+Cuando un nodo abandona la red, se comunica con los otros nodos que ha almacenado en su almacenamiento local para informarles de su partida. Los otros nodos luego actualizan sus tablas de enrutamiento para eliminar el nodo que se va.
 
-When a node leaves the network, it contacts the other nodes it has stored in its local storage to inform them of its departure. The other nodes then update their routing tables to remove the departing node.
+Si un nodo falla o se vuelve inaccesible, los otros nodos en la red aún pueden localizar y recuperar datos utilizando el protocolo `Kademlia` para enrutar alrededor del nodo fallido. Cuando un nodo necesita localizar una clave que no está en su almacenamiento local, envía una solicitud al nodo que está más cerca de la clave. Si ese nodo no es accesible, el nodo solicitante envía la solicitud al siguiente nodo más cercano, y así sucesivamente, hasta que se encuentra la clave.
 
-If a node fails or becomes unreachable, the other nodes in the network can still locate and retrieve data by using the `Kademlia` protocol to route around the failed node. When a node needs to locate a key that is not in its local storage, it sends a request to the node that is closest to the key. If that node is unreachable, the requesting node sends the request to the next closest node, and so on, until the key is found.
+La tolerancia a fallos se logra mediante la replicación de archivos y sus etiquetas asociadas en varios nodos en la red. Esto asegura que si un nodo falla o se vuelve inaccesible, los archivos y etiquetas aún pueden ser recuperados de otros nodos en la red.
 
-Fault tolerance is achieved by replicating files and their associated tags across multiple nodes in the network. This ensures that if a node fails or becomes unreachable, the files and tags can still be retrieved from other nodes in the network.
+#### Flujo de datos:
 
-#### Data Flow:
+- Los archivos se cargan en los nodos de la red y se almacenan de manera distribuida.
+- Las etiquetas se asocian con los archivos y se almacenan de manera distribuida.
+- Cuando un usuario busca archivos según etiquetas, el cliente envía una solicitud a uno de los nodos en la red para buscar archivos con la etiqueta especificada. El nodo luego devuelve una lista de archivos que coinciden con la etiqueta.
+- Cuando un usuario descarga un archivo, el cliente envía una solicitud al nodo que tiene el archivo. El nodo luego envía el archivo al cliente.
 
-- Files are uploaded to the nodes in the network and are stored in a distributed manner.
-- Tags are associated with the files and are stored in a distributed manner.
-- When a user searches for files based on tags, the client sends a request to one of the nodes in the network to search for files with the specified tag. The node then returns a list of files that match the tag.
-- When a user downloads a file, the client sends a request to the node that has the file. The node then sends the file to the client.
+#### Lenguaje de Comandos
 
-#### Command Parser
+La clase `CommandParser` en `client.py` es responsable de analizar la entrada del usuario y generar un comando que puede ser ejecutado por el cliente.
 
-The `CommandParser` class in `client.py` is responsible for parsing the user's input and generating a command object that can be executed by the client.
+El método `parse` recibe una cadena como entrada y devuelve un objeto `Command`. El objeto `Command` tiene dos atributos: `name` y `args`. `name` es una cadena que representa el nombre del comando (por ejemplo, "add", "delete", "list", etc.), y `args` es un diccionario que contiene los argumentos del comando.
 
-The `parse` method takes a string as input and returns a `Command` object. The `Command` object has two attributes: `name` and `args`. name is a string that represents the name of the command (e.g. "add", "delete", "list", etc.), and `args` is a dictionary that contains the arguments for the command.
+El método `parse` primero divide la cadena de entrada en tokens usando el espacio en blanco como delimitador. Luego verifica si el primer token es un nombre de comando válido. Si lo es, establece el atributo `name` del objeto `Command` en el nombre del comando. Si no lo es, genera una excepción.
 
-The `parse` method first splits the input string into tokens using whitespace as the delimiter. It then checks if the first token is a valid command name. If it is, it sets the name attribute of the `Command` object to the command name. If it is not, it raises a `CommandError` exception.
+El método `parse` luego itera sobre los tokens restantes y los agrega al diccionario `args`. Se espera que los argumentos estén en la forma "-arg value", donde "-arg" es el nombre del argumento y "value" es el valor del argumento.
 
-The `parse` method then iterates over the remaining tokens and adds them to the `args` dictionary. The arguments are expected to be in the form "-arg value", where "-arg" is the name of the argument and "value" is the value of the argument. If an argument is not in this format, the `parse` method raises a `CommandError` exception.
+Una vez que se han agregado todos los argumentos al diccionario `args`, el método `parse` devuelve la instrucción.
 
-Once all the arguments have been added to the args dictionary, the parse method returns the `Command` object.
+## Instalación
 
-## Used `Python` packages
+### Paquetes de `Python` utilizados
 
 - `pickle`
 - `umgspack`
 - `rpyc`
 - `asyncio`
-
-## Modos de uso
-
-python3 client.py client-ip client-port bootstrap-routing-node-ip bootstrap-routing-port
-
-`add -f file-list -t tag-list`
-
-Copia uno o más ficheros hacia el sistema y estos son inscritos con las etiquetas contenidas en tag-list.
-
-`delete -q tag-query`
-
-Elimina todos los ficheros que cumplan con la consulta tag-query.
-
-`list -q tag-query`
-
-Lista el nombre y las etiquetas de todos los ficheros que cumplan con la consulta tag-query.
-
-`add-tags -q tag-query -t tag-list`
-
-Añade las etiquetas contenidas en tag-list a todos los ficheros que cumpan con la consulta tag-query.
-
-`delete-tags -q tag-query -t tag-list`
-
-Elimina las etiquetas contenidas en tag-list de todos los ficheros que cumplan con la consulta tag-query.
-
-#### Funciones adicionales
-
-`get -q tag-query`
-
-Descarga todos los ficheros que cumplan con la consulta tag-query. Los ficheros seran almacenados en la carpeta 'secure' del Proyecto.
