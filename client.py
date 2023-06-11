@@ -62,7 +62,6 @@ async def get_fileIds(tag_query, server, prt=False):
                 print("Get result:", end=" ")
                 print(file_ids)
             return file_ids
-
         except:
             return files
 
@@ -113,30 +112,29 @@ async def list(tag_query, server, prt = True):
     to_return = []
     nodes_per_value = {}
     fids = await get_fileIds(tag_query, server, False)
+
     if len(fids):
         for f in fids:
+           
             l, d = (await server.get(f, False))
-            nodes_per_value.update(d)
-            if not l:
-                if (prt): print('No results')
+            if d: nodes_per_value.update(d)
+            if not l and prt:
+                print('No results')
                 return
-            f, tags, name = pickle.loads(l)
+            f, tags, name = pickle.loads(l) 
 
             to_return.append((name, pickle.loads(f)))
+            
             result = 'file: ' + name + ' tags:'
             for t in pickle.loads(tags):
                 result += ' ' + t
-            if prt:
-                print(result)
+            if prt: print(result)
     elif prt:
         print('No results')
-
     return to_return, nodes_per_value
 
 async def get(tag_query, server):
     info, nodes_per_value = await list(tag_query, server)
-    # print(info)
-    #print(nodes_per_value,'desde get',flush=True)
     for key in nodes_per_value.keys():
         _, _, name = pickle.loads(key)
         nodes = nodes_per_value[key]
@@ -148,19 +146,13 @@ async def get(tag_query, server):
             if succes:
                 break
 
-    # for name, file in info:
-    #     w = open('downloads/' + name, "wb")
-    #     w.write(file)
-    #     w.close()
-
 async def delete(tag_query, server):
     files = await get_fileIds(tag_query, server, False)
     info, nodes_per_value = await list(tag_query, server, prt=False)
 
     for f in files:
         l, _ = (await server.get(f, False))
-        # print(l)
-        # input()
+       
         if not l:
             continue
         f1, tags, name = pickle.loads(l)

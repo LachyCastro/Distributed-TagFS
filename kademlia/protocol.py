@@ -97,7 +97,7 @@ class KademliaProtocol(RPCProtocol):
     async def call_store(self, node_to_ask, dkey, key, name=None, value=None, hash=True):
         address = (node_to_ask.ip, node_to_ask.port)
         result = await self.store(address, self.source_node.id,dkey, key, name, value, hash)
-        if result[0]:
+        if result[0] and name:
             await send_file(node_to_ask.ip, node_to_ask.port,name)
         return self.handle_call_response(result, node_to_ask)
 
@@ -131,8 +131,6 @@ class KademliaProtocol(RPCProtocol):
         self.router.add_contact(node)
 
     def handle_call_response(self, result, node):
-        #print("result >>>>")
-        #print(result)
         if not result[0]:
             #log.warning("no response from %s, removing from router", node)
             self.router.remove_contact(node)

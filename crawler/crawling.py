@@ -65,7 +65,6 @@ class ValueSpiderCrawl(SpiderCrawl):
                     nodes_per_value[value].append(peer.__str__())
                 except:
                     nodes_per_value[value] = [peer.__str__()]
-
             else:
                 peer = self.nearest.get_node(peerid)
                 self.nearest_without_value.push(peer)
@@ -77,7 +76,7 @@ class ValueSpiderCrawl(SpiderCrawl):
             return value, nodes_per_value
         if self.nearest.have_contacted_all():
             # not found!
-            return None
+            return None,None
         return await self.find()
 
     async def _handle_found_values(self, values):

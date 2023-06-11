@@ -74,7 +74,7 @@ class Server:
         await asyncio.gather(*results)
 
         for dkey, value in self.storage.iter_older_than(3600):
-            await self.set_digest(dkey, None, None, value)
+            await self.set_digest(dkey, value)
 
     async def bootstrappable_neighbors(self):
         neighbors = self.protocol.router.find_neighbors(self.node)
@@ -104,7 +104,7 @@ class Server:
         nearest = self.protocol.router.find_neighbors(node)
         if not nearest:
             log.warning("There are no known neighbors to get key %s", key)
-            return None
+            return None, None
         spider = ValueSpiderCrawl(self.protocol, node, nearest,
                                   self.ksize, self.alpha)
         return await spider.find()

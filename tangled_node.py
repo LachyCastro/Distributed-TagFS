@@ -6,7 +6,6 @@ import storage
 from network import Server
 
 # Usage: <python3> <node_ip> <node_port> <bootstrap_node_ip> <bootstrap_node_port>
-
 loop = asyncio.get_event_loop()
 loop.set_debug(True)
 
