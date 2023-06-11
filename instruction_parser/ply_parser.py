@@ -37,25 +37,25 @@ def p_add_inst(p):
     'add_inst : ADD file_list tag_list'
     file_list = p[2]
     tag_list = p[3]
-    p[0] = Add.execute(file_list, tag_list)
+    p[0] = Add(file_list, tag_list)
 
 def p_query_inst(p):
     'query_inst : inst tag_query'
     command = p[1]
     tag_query = p[2]
-    p[0] = command.execute(tag_query)
+    p[0] = command(tag_query)
 
 def p_add_tags_inst(p):
     'add_tags_inst : ADD_TAGS tag_query tag_list'
     tag_query = p[2]
     tag_list = p[3]
-    p[0] = AddTags.execute(tag_query, tag_list)
+    p[0] = AddTags(tag_query, tag_list)
 
 def p_delete_tags_inst(p):
     'delete_tags_inst : DELETE_TAGS tag_query tag_list'
     tag_query = p[2]
     tag_list = p[3]
-    p[0] = DeleteTags.execute(tag_query, tag_list)
+    p[0] = DeleteTags(tag_query, tag_list)
 
 def p_inst(p):
     '''inst : DELETE

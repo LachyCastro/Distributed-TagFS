@@ -1,0 +1,49 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Grammar
+
+Rule 0     S' -> input
+Rule 1     input -> instruction
+Rule 2     instruction -> add_inst
+Rule 3     instruction -> query_inst
+Rule 4     instruction -> add_tags_inst
+Rule 5     instruction -> delete_tags_inst
+Rule 6     add_inst -> ADD file_list tag_list
+Rule 7     query_inst -> inst tag_query
+Rule 8     add_tags_inst -> ADD_TAGS tag_query tag_list
+Rule 9     delete_tags_inst -> DELETE_TAGS tag_query tag_list
+Rule 10    inst -> DELETE
+Rule 11    inst -> LIST
+Rule 12    inst -> GET
+Rule 13    file_list -> FILENAME
+Rule 14    file_list -> FILENAME file_list
+Rule 15    tag_list -> WORD
+Rule 16    tag_list -> WORD tag_list
+Rule 17    tag_query -> WORD
+Rule 18    tag_query -> WORD tag_query
+
+Terminals, with rules where they appear
+
+FILENAME             : 13 14
+WORD                 : 15 16 17 18
+error                : 
+
+Nonterminals, with rules where they appear
+
+ADD                  : 6
+ADD_TAGS             : 8
+DELETE               : 10
+DELETE_TAGS          : 9
+GET                  : 12
+LIST                 : 11
+add_inst             : 2
+add_tags_inst        : 4
+delete_tags_inst     : 5
+file_list            : 6 14
+input                : 0
+inst                 : 7
+instruction          : 1
+query_inst           : 3
+tag_list             : 6 8 9 16
+tag_query            : 7 8 9 18
+
