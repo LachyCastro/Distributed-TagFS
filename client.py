@@ -4,11 +4,11 @@ import sys
 
 sys.path.append('auxiliar/')
 from auxiliar.utils import infix_postfix, ops
-from auxiliar.parser import CommandParser
+
+sys.path.append('instruction_parser/')
+from instruction_parser.command_parser import CommandParser
 from network import Server
 from storage import FileStorage
-
-
 
 async def operation(response, server):
     if response[0] == 'add':
