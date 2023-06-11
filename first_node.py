@@ -1,4 +1,5 @@
 import asyncio
+import os
 import sys
 
 import storage
@@ -20,6 +21,13 @@ def run(ip, port):
     server = Server(storage=storage.FileStorage())
     loop.run_until_complete(server.listen(int(port), ip))
 
+    first_node = (ip, port)
+    inst = ['python3', 'tcp_server.py', ip, port]
+    pid = os.fork()
+    if pid:
+        print(str(first_node) + " ---> " + str(pid))
+    else:
+        os.execvp(inst[0], inst)
     try:
         loop.run_forever()
     except KeyboardInterrupt:

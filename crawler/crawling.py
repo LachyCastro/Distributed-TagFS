@@ -49,12 +49,23 @@ class ValueSpiderCrawl(SpiderCrawl):
     async def _nodes_found(self, responses):
         toremove = []
         found_values = []
+        found_nodes = []
+        nodes_per_value = {}
+        
         for peerid, response in responses.items():
             response = RPCFindResponse(response)
             if not response.happened():
                 toremove.append(peerid)
             elif response.has_value():
-                found_values.append(response.get_value())
+                value = response.get_value()
+                found_values.append(value)
+                peer = self.nearest.get_node(peerid)
+                found_nodes.append(peer.ip)
+                try:
+                    nodes_per_value[value].append(peer.__str__())
+                except:
+                    nodes_per_value[value] = [peer.__str__()]
+
             else:
                 peer = self.nearest.get_node(peerid)
                 self.nearest_without_value.push(peer)
@@ -62,7 +73,8 @@ class ValueSpiderCrawl(SpiderCrawl):
         self.nearest.remove(toremove)
 
         if found_values:
-            return await self._handle_found_values(found_values)
+            value = await self._handle_found_values(found_values)
+            return value, nodes_per_value
         if self.nearest.have_contacted_all():
             # not found!
             return None

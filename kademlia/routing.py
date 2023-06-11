@@ -1,4 +1,3 @@
-
 import asyncio
 import heapq
 import operator
@@ -6,69 +5,9 @@ import time
 from collections import OrderedDict
 from itertools import chain
 
-import sys
-sys.path.append('auxiliar/')
-
 from auxiliar import routing_utils
 
 
-class RoutingTable:
-
-    def __init__(self, node, ksize, protocol ) -> None:
-        self.node = node
-        self.protocol = protocol
-        self.ksize = ksize
-        self.buckets = [KBucket(0, 2 ** 160, self.ksize)]
-    
-    def add_contact(self, node):
-        index = self.get_bucket_for(node)
-        bucket = self.buckets[index]
-
-        if bucket.add_node(node):
-            return
-
-        if bucket.has_in_range(self.node) or bucket.depth() % 5 != 0:
-            self.split_bucket(index)
-            self.add_contact(node)
-        else:
-            asyncio.ensure_future(self.protocol.call_ping(bucket.head()))
-
-    def remove_contact(self, node):
-        index = self.get_bucket_for(node)
-        self.buckets[index].remove_node(node)
-    
-    def get_bucket_for(self, node):
-        for index, bucket in enumerate(self.buckets):
-            if node.long_id < bucket.range[1]:
-                return index
-        return None
-    
-    def split_bucket(self, index):
-        one, two = self.buckets[index].split()
-        self.buckets[index] = one
-        self.buckets.insert(index + 1, two)
-
-    def lonely_buckets(self):
-        hour_ago = time.monotonic() - 3600
-        return [b for b in self.buckets if b.last_updated < hour_ago]
-    
-    def is_new_node(self, node):
-        index = self.get_bucket_for(node)
-        return self.buckets[index].is_new_node(node)
-    
-    def find_neighbors(self, node, k=None, exclude=None):
-        k = k or self.ksize
-        nodes = []
-        for neighbor in TableTraverser(self, node):
-            not_excluded = exclude is None or not neighbor.same_home_as(exclude) #<-- exclude or node ??
-            if neighbor.id != node.id and not_excluded:
-                heapq.heappush(nodes, (node.distance_to(neighbor), neighbor))
-            if len(nodes) == k:
-                break
-
-        return list(map(operator.itemgetter(1), heapq.nsmallest(k, nodes)))
-
-    
 class KBucket:
     def __init__(self, rangeLower, rangeUpper, ksize):
         self.range = (rangeLower, rangeUpper)
@@ -80,20 +19,20 @@ class KBucket:
     def touch_last_updated(self):
         self.last_updated = time.monotonic()
 
-    def add_node(self, node):
+    def get_nodes(self):
+        return list(self.nodes.values())
 
-        if node.id in self.nodes:
-            del self.nodes[node.id]
-            self.nodes[node.id] = node
-        elif len(self) < self.ksize:
-            self.nodes[node.id] = node
-        else:
-            if node.id in self.replacement_nodes:
-                del self.replacement_nodes[node.id]
-            self.replacement_nodes[node.id] = node
-            return False
-        return True
-    
+    def split(self):
+        midpoint = (self.range[0] + self.range[1]) / 2
+        one = KBucket(self.range[0], midpoint, self.ksize)
+        two = KBucket(midpoint + 1, self.range[1], self.ksize)
+        nodes = chain(self.nodes.values(), self.replacement_nodes.values())
+        for node in nodes:
+            bucket = one if node.long_id <= midpoint else two
+            bucket.add_node(node)
+
+        return (one, two)
+
     def remove_node(self, node):
         if node.id in self.replacement_nodes:
             del self.replacement_nodes[node.id]
@@ -105,35 +44,33 @@ class KBucket:
                 newnode_id, newnode = self.replacement_nodes.popitem()
                 self.nodes[newnode_id] = newnode
 
-    
     def has_in_range(self, node):
         return self.range[0] <= node.long_id <= self.range[1]
-    
-    def split(self):
-        midpoint = (self.range[0] + self.range[1]) / 2
-        one = KBucket(self.range[0], midpoint, self.ksize)
-        two = KBucket(midpoint + 1, self.range[1], self.ksize)
-        nodes = chain(self.nodes.values(), self.replacement_nodes.values())
-        for node in nodes:
-            bucket = one if node.long_id <= midpoint else two
-            bucket.add_node(node)
 
-        return (one, two)
-    
+    def is_new_node(self, node):
+        return node.id not in self.nodes
+
+    def add_node(self, node):
+        if node.id in self.nodes:
+            del self.nodes[node.id]
+            self.nodes[node.id] = node
+        elif len(self) < self.ksize:
+            self.nodes[node.id] = node
+        else:
+            if node.id in self.replacement_nodes:
+                del self.replacement_nodes[node.id]
+            self.replacement_nodes[node.id] = node
+            return False
+        return True
+
     def depth(self):
         vals = self.nodes.values()
         sprefix = routing_utils.shared_prefix([routing_utils.bytes_to_bit_string(n.id) for n in vals])
         return len(sprefix)
-    
-    def is_new_node(self, node):
-        return node.id not in self.nodes
-    
+
     def head(self):
         return list(self.nodes.values())[0]
-    
-    def get_nodes(self):
-        return list(self.nodes.values())
-    
+
     def __getitem__(self, node_id):
         return self.nodes.get(node_id, None)
 
@@ -168,3 +105,62 @@ class TableTraverser:
             return next(self)
 
         raise StopIteration
+
+
+class RoutingTable:
+    def __init__(self, protocol, ksize, node):
+        self.node = node
+        self.protocol = protocol
+        self.ksize = ksize
+        self.flush()
+
+    def flush(self):
+        self.buckets = [KBucket(0, 2 ** 160, self.ksize)]
+
+    def split_bucket(self, index):
+        one, two = self.buckets[index].split()
+        self.buckets[index] = one
+        self.buckets.insert(index + 1, two)
+
+    def lonely_buckets(self):
+        hrago = time.monotonic() - 3600
+        return [b for b in self.buckets if b.last_updated < hrago]
+
+    def remove_contact(self, node):
+        index = self.get_bucket_for(node)
+        self.buckets[index].remove_node(node)
+
+    def is_new_node(self, node):
+        index = self.get_bucket_for(node)
+        return self.buckets[index].is_new_node(node)
+
+    def add_contact(self, node):
+        index = self.get_bucket_for(node)
+        bucket = self.buckets[index]
+
+        if bucket.add_node(node):
+            return
+
+        if bucket.has_in_range(self.node) or bucket.depth() % 5 != 0:
+            self.split_bucket(index)
+            self.add_contact(node)
+        else:
+            asyncio.ensure_future(self.protocol.call_ping(bucket.head()))
+
+    def get_bucket_for(self, node):
+        for index, bucket in enumerate(self.buckets):
+            if node.long_id < bucket.range[1]:
+                return index
+        return None
+
+    def find_neighbors(self, node, k=None, exclude=None):
+        k = k or self.ksize
+        nodes = []
+        for neighbor in TableTraverser(self, node):
+            notexcluded = exclude is None or not neighbor.same_home_as(exclude) #<-- exclude or node ??
+            if neighbor.id != node.id and notexcluded:
+                heapq.heappush(nodes, (node.distance_to(neighbor), neighbor))
+            if len(nodes) == k:
+                break
+
+        return list(map(operator.itemgetter(1), heapq.nsmallest(k, nodes)))

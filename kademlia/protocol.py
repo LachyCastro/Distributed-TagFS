@@ -1,15 +1,15 @@
 import asyncio
 import logging
 import random
+import sys
 
 from routing import RoutingTable
 
-import sys
 sys.path.append('auxiliar/')
-
-from protocol.rpc import RPCProtocol
 from auxiliar.node import Node
+from auxiliar.tcp_utils import send_file
 from auxiliar.utils import digest
+from protocol.rpc import RPCProtocol
 
 log = logging.getLogger(__name__)
 
@@ -97,6 +97,8 @@ class KademliaProtocol(RPCProtocol):
     async def call_store(self, node_to_ask, dkey, key, name=None, value=None, hash=True):
         address = (node_to_ask.ip, node_to_ask.port)
         result = await self.store(address, self.source_node.id,dkey, key, name, value, hash)
+        if result[0]:
+            await send_file(node_to_ask.ip, node_to_ask.port,name)
         return self.handle_call_response(result, node_to_ask)
 
     async def call_delete(self, node_to_ask, key):
