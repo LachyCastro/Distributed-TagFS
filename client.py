@@ -36,15 +36,14 @@ async def add_tags(tag_query, tag_list, server):
     for t in tag_list:
         for f in response:
             try:
-                r = pickle.loads(await server.get(t, True))
-                r = r.keys()
+                r, _ = await server.get(t, True)
+                r = pickle.loads(r)
                 if f not in r:
                     # print('not match')
                     await server.set(t, None ,f, False)
 
             except:
-                l = (await server.get(f, False))
-                l = l.keys()
+                l, _ = (await server.get(f, False))
                 # print(l)
                 # input()
                 f1, tags, name = pickle.loads(l)
@@ -157,8 +156,7 @@ async def get(tag_query, server):
 async def delete(tag_query, server):
     files = await get_fileIds(tag_query, server, False)
     for f in files:
-        l = (await server.get(f, False))
-        l = l.keys()
+        l, _ = (await server.get(f, False))
         # print(l)
         # input()
         if not l:

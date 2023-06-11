@@ -104,6 +104,8 @@ class KademliaProtocol(RPCProtocol):
     async def call_delete(self, node_to_ask, key):
         address = (node_to_ask.ip, node_to_ask.port)
         result = await self.delete(address, self.source_node.id, key)
+        #if result[0]:
+        #    await delete(node_to_ask.ip, node_to_ask.port,name)
         return self.handle_call_response(result, node_to_ask)
 
     async def call_delete_tag(self, node_to_ask, dkey ,key, value):

@@ -39,7 +39,9 @@ class Service(rpyc.Service):
 
     def exposed_disp_list(self):
         return os.listdir("secure")
-       
+    
+    def exposed_delete(self, fname):
+        os.remove("secure/"+fname)
   
 
 if __name__ == "__main__":
