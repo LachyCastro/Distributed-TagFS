@@ -5,7 +5,7 @@ import sys
 
 sys.path.append('auxiliar/')
 from auxiliar.parser import CommandParser
-from auxiliar.tcp_utils import download
+from auxiliar.tcp_utils import download, delete_file
 from auxiliar.utils import infix_postfix, ops
 from network import Server
 from storage import FileStorage
@@ -109,7 +109,7 @@ async def get_fileIds(tag_query, server, prt=False):
         return result
 
 #todo list de verdad
-async def list(tag_query, server, prt = False):
+async def list(tag_query, server, prt = True):
     to_return = []
     nodes_per_value = {}
     fids = await get_fileIds(tag_query, server, False)
@@ -118,7 +118,7 @@ async def list(tag_query, server, prt = False):
             l, d = (await server.get(f, False))
             nodes_per_value.update(d)
             if not l:
-                print('No results')
+                if (prt): print('No results')
                 return
             f, tags, name = pickle.loads(l)
 
@@ -126,9 +126,9 @@ async def list(tag_query, server, prt = False):
             result = 'file: ' + name + ' tags:'
             for t in pickle.loads(tags):
                 result += ' ' + t
-
-            print(result)
-    else:
+            if prt:
+                print(result)
+    elif prt:
         print('No results')
 
     return to_return, nodes_per_value
@@ -155,6 +155,8 @@ async def get(tag_query, server):
 
 async def delete(tag_query, server):
     files = await get_fileIds(tag_query, server, False)
+    info, nodes_per_value = await list(tag_query, server, prt=False)
+
     for f in files:
         l, _ = (await server.get(f, False))
         # print(l)
@@ -167,6 +169,16 @@ async def delete(tag_query, server):
             await server.delete_tag(t, f)
 
         await server.delete(f, False)
+
+    for key in nodes_per_value.keys():
+        _, _, name = pickle.loads(key)
+        nodes = nodes_per_value[key]
+        for node in nodes:
+            node = node.split(':')
+            ip = node[0]
+            port = node[1]
+            await delete_file(ip, int(port), name)
+    
 
 async def delete_tags(tag_query, tag_list, server):
     files = await get_fileIds(tag_query, server, False)
