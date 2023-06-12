@@ -54,6 +54,11 @@ Cada nodo que se une a la red de intercambio de archivos arranca el cliente-serv
 Para solicitar la ubicación de un archivo deseado, el cliente utiliza la API de Kademlia para obtener el archivo especificando su etiqueta. El cliente recibirá la dirección IP y el puerto de otro servidor en la red que tenga ese valor. Una vez que el cliente recibe el par de dirección IP y puerto adecuado para descargar el archivo deseado, se comunica con el servidor al que pertenece ese par. En el caso de que varios nodos alojen el mismo archivo, el cliente recibirá una lista de pares de compañeros para contactar en caso de que uno falle.
 
 Kademlia está estructurado para tener su propio protocolo que consta de un conjunto de instrucciones RPC sobre UDP.
+<p align='center'>
+  <img width='460' heigth='300' src='https://github.com/LachyCastro/Distributed-TagFS/blob/main/structure.png'>
+  <br>
+  Estructura del sistema
+</p>
 
 #### Flujo de datos:
 
