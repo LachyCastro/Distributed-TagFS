@@ -10,6 +10,9 @@ from instruction_parser.command_parser import CommandParser
 from network import Server
 from storage import FileStorage
 
+sys.path.append('instruction_parser/')
+from instruction_parser.ply_parser import parser
+
 async def operation(response, server):
     if response[0] == 'add':
         return await add(response[1], response[2], server)
@@ -200,7 +203,6 @@ if __name__ == '__main__':
         print("Usage: python3 client.py <client ip> <client port > <bootstrap routing_node> <bootstrap routing_port>")
         sys.exit(1)
 
-    parser = CommandParser()
     
     loop = asyncio.get_event_loop()
     server = Server(storage=FileStorage())
@@ -210,13 +212,20 @@ if __name__ == '__main__':
 
     inst = ['echo', '', '>', '/Test/output']
 
+    
     while True:
         try:
             print(' >>', end=' ')
             inp = input()
             if not len(inp):
                 continue
-            loop.run_until_complete(operation(parser(inp), server))
+            response_parser = parser.parse(inp)
+            print(response_parser, flush=True)
+            print(response_parser.files, flush=True)
+            print(response_parser.tags, flush=True)
+            rp = response_parser.execute()
+            print(rp, flush=True)
+            loop.run_until_complete(operation(rp, server))
 
         except Exception as e:
             if e == KeyboardInterrupt:
