@@ -10,6 +10,7 @@ sys.path.append('kademlia/')
 sys.path.append('protocol/')
 
 from auxiliar.node import Node
+from auxiliar.tcp_utils import send_file
 from auxiliar.utils import digest
 from crawler.crawling import NodeSpiderCrawl, ValueSpiderCrawl
 from kademlia.protocol import KademliaProtocol
@@ -103,7 +104,7 @@ class Server:
         nearest = self.protocol.router.find_neighbors(node)
         if not nearest:
             log.warning("There are no known neighbors to get key %s", key)
-            return None
+            return None, None
         spider = ValueSpiderCrawl(self.protocol, node, nearest,
                                   self.ksize, self.alpha)
         return await spider.find()
@@ -156,7 +157,7 @@ class Server:
         dkey = digest(key)
         return await self.set_digest(dkey, key, name , value, hash)
 
-    async def set_digest(self, dkey, key, name, value, hash = True):
+    async def set_digest(self, dkey, key , name, value, hash = True):
         node = Node(dkey)
 
         nearest = self.protocol.router.find_neighbors(node)
@@ -174,6 +175,7 @@ class Server:
         biggest = max([n.distance_to(node) for n in nodes])
         if self.node.distance_to(node) < biggest:
             self.storage.set(dkey, key, name , value, hash)
+            await send_file(self.node.ip, self.node.port,name)
         results = [self.protocol.call_store(n, dkey, key, name, value, hash) for n in nodes]
         # return true only if at least one store call succeeded
         return any(await asyncio.gather(*results))

@@ -1,4 +1,5 @@
 import asyncio
+import os
 import pickle
 import sys
 
@@ -6,12 +7,13 @@ sys.path.append('auxiliar/')
 from auxiliar.utils import infix_postfix, ops
 
 sys.path.append('instruction_parser/')
-from instruction_parser.command_parser import CommandParser
 from network import Server
 from storage import FileStorage
 
 sys.path.append('instruction_parser/')
 from instruction_parser.ply_parser import parser
+
+from auxiliar.tcp_utils import download, delete_file
 
 async def operation(response, server):
     if response[0] == 'add':
@@ -23,46 +25,33 @@ async def operation(response, server):
     elif response[0] == 'delete-tags':
         return await delete_tags(response[1], response[2], server)
     elif response[0] == 'list':
-        return await list(response[1], server, prt=True)
+        files, _ = await list(response[1], server, prt=True)
+        return files
     elif response[0] == 'get':
         return await get(response[1], server)
 
 async def add(file_list, tag_list, server):
-    chunk_size = 20 * 1024
-    lfiles = []
-    for f in file_list:
-        with open(f, 'rb') as lf:
-            while True:
-                chunk = lf.read(chunk_size)
-                if not chunk:
-                    break
-                lfiles.append(chunk)
-       
-    print(len(lfiles), flush=True)
     for t in tag_list:
-        for i in range(len(lfiles)):
-            await server.set(t, file_list[0]+ '?'+ str(i) , lfiles[i])
-    # for i in range(len(lfiles)):
-    #     await server.set(tag_list[0], file_list[0], lfiles[i])
-
+        for i in range(len(file_list)):
+            await server.set(t, file_list[i], file_list[i])
 
 async def add_tags(tag_query, tag_list, server):
     response = await get_fileIds(tag_query, server)
     for t in tag_list:
         for f in response:
             try:
-                r = pickle.loads(await server.get(t, True))
+                r, _ = await server.get(t, True)
+                r = pickle.loads(r)
                 if f not in r:
                     # print('not match')
                     await server.set(t, None ,f, False)
 
             except:
-                l = (await server.get(f, False))
+                l, _ = (await server.get(f, False))
                 # print(l)
                 # input()
                 f1, tags, name = pickle.loads(l)
                 await server.set(t, name ,pickle.loads(f1), True)
-
 
 
 
@@ -71,13 +60,12 @@ async def get_fileIds(tag_query, server, prt=False):
     tokens = infix_postfix(tag_query)
     if len(tokens) == 1:
         try:
-            file_ids = pickle.loads(await server.get(tokens[0], True))
-            print(file_ids,'Fileeeee', flush=True)
+            l, nodes_per_values = await server.get(tokens[0], True)
+            file_ids = pickle.loads(l)
             if prt:
                 print("Get result:", end=" ")
                 print(file_ids)
             return file_ids
-
         except:
             return files
 
@@ -107,7 +95,8 @@ async def get_fileIds(tag_query, server, prt=False):
                         else:
                             stack.append(op1.union(op2))
             else:
-                load = await server.get(item, True)
+                load, nodes_per_values = await server.get(item, True)
+
                 if load:
                     stack.append(pickle.loads(load))
                 else:
@@ -123,66 +112,51 @@ async def get_fileIds(tag_query, server, prt=False):
         return result
 
 #todo list de verdad
-async def list(tag_query, server, prt = False):
+async def list(tag_query, server, prt = True):
     to_return = []
+    nodes_per_value = {}
     fids = await get_fileIds(tag_query, server, False)
+
     if len(fids):
         for f in fids:
-            l = (await server.get(f, False))
-            if not l:
+           
+            l, d = (await server.get(f, False))
+            if d: nodes_per_value.update(d)
+            if not l and prt:
                 print('No results')
                 return
-            f, tags, name = pickle.loads(l)
+            f, tags, name = pickle.loads(l) 
 
             to_return.append((name, pickle.loads(f)))
+            
             result = 'file: ' + name + ' tags:'
             for t in pickle.loads(tags):
                 result += ' ' + t
-
-            print(result, flush=True)
-    else:
+            if prt: print(result)
+    elif prt:
         print('No results')
-
-    return to_return
-
-async def name_splitted(content):
-    files={}
-
-    for item in content:
-        name = item[1]
-        name = name.split('?')
-        try:
-            files[name[0]].append((name[1],item[0]))
-        except:
-            files[name[0]] = [(name[1],item[0])]
-
-    for key in files.keys():
-        files[key].sort(key=lambda x: int(x[0]))
-        files[key] = [x[1] for x in files[key]]
-    
-
-    return files
+    return to_return, nodes_per_value
 
 async def get(tag_query, server):
-    info = await list(tag_query, server)
-    #print(info, flush=True)
-    content = []
-    for name, file in info:
-        content.append((file,name))
-    files = await name_splitted(content)
-
-    for key in files.keys():
-        file = b''.join(files[key])
-        w = open('downloads/' + key, "wb")
-        w.write(file)
-        w.close()
+    info, nodes_per_value = await list(tag_query, server)
+    for key in nodes_per_value.keys():
+        _, _, name = pickle.loads(key)
+        nodes = nodes_per_value[key]
+        for node in nodes:
+            node = node.split(':')
+            ip = node[0]
+            port = node[1]
+            succes = await download(ip, int(port), name)
+            if succes:
+                break
 
 async def delete(tag_query, server):
     files = await get_fileIds(tag_query, server, False)
+    info, nodes_per_value = await list(tag_query, server, prt=False)
+
     for f in files:
-        l = (await server.get(f, False))
-        # print(l)
-        # input()
+        l, _ = (await server.get(f, False))
+       
         if not l:
             continue
         f1, tags, name = pickle.loads(l)
@@ -191,6 +165,16 @@ async def delete(tag_query, server):
             await server.delete_tag(t, f)
 
         await server.delete(f, False)
+
+    for key in nodes_per_value.keys():
+        _, _, name = pickle.loads(key)
+        nodes = nodes_per_value[key]
+        for node in nodes:
+            node = node.split(':')
+            ip = node[0]
+            port = node[1]
+            await delete_file(ip, int(port), name)
+    
 
 async def delete_tags(tag_query, tag_list, server):
     files = await get_fileIds(tag_query, server, False)
@@ -209,7 +193,14 @@ if __name__ == '__main__':
     loop.run_until_complete(server.listen(int(sys.argv[2]), sys.argv[1]))
     bootstrap_node = (sys.argv[3], int(sys.argv[4]))
     loop.run_until_complete(server.bootstrap([bootstrap_node]))
-
+    client_node = (sys.argv[1], sys.argv[2])
+    inst = ['python3', 'tcp_server.py', sys.argv[1], sys.argv[2]]
+    pid = os.fork()
+    if pid:
+        print(str(client_node) + " ---> " + str(pid))
+    else:
+        os.execvp(inst[0], inst)
+        
     inst = ['echo', '', '>', '/Test/output']
 
     
