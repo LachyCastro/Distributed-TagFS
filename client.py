@@ -211,13 +211,8 @@ if __name__ == '__main__':
             if not len(inp):
                 continue
             response_parser = parser.parse(inp)
-            print(response_parser, flush=True)
-            print(response_parser.files, flush=True)
-            print(response_parser.tags, flush=True)
             rp = response_parser.execute()
-            print(rp, flush=True)
             loop.run_until_complete(operation(rp, server))
-
         except Exception as e:
             if e == KeyboardInterrupt:
                 server.close()

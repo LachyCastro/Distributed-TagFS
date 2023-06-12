@@ -20,17 +20,16 @@ tokens = (
     'T',
     'Q'
 )
-
-def t_ADD(t):
-    r'add'
-    return t
-
 def t_ADD_TAGS(t):
     r'add-tags'
     return t
 
 def t_DELETE_TAGS(t):
     r'delete-tags'
+    return t
+
+def t_ADD(t):
+    r'add'
     return t
 
 def t_DELETE(t):
@@ -113,11 +112,11 @@ def p_inst(p):
     '''inst : DELETE
             | LIST
             | GET'''
-    if p[1] == 'DELETE':
+    if p[1] == 'delete':
         p[0] = Delete
-    elif p[1] == 'LIST':
+    elif p[1] == 'list':
         p[0] = List
-    elif p[1] == 'GET':
+    elif p[1] == 'get':
         p[0] = Get
 
 def p_file_list(p):
@@ -149,5 +148,6 @@ lexer = lex.lex()
 parser = yacc.yacc()
 
 # Example usage
-input_str = 'add -f info.md -t a'
-result = parser.parse(input_str)
+# input_str = 'add-tags -q asd -t y'
+# result = parser.parse(input_str)
+# print(result)
