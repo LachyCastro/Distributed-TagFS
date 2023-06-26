@@ -9,7 +9,7 @@ from auxiliar.tcp_utils import download, delete_file
 from auxiliar.utils import infix_postfix, ops
 from network import Server
 from storage import FileStorage
-
+import hashlib
 
 async def operation(response, server):
     if response[0] == 'add':
@@ -29,7 +29,11 @@ async def operation(response, server):
 async def add(file_list, tag_list, server):
     for t in tag_list:
         for i in range(len(file_list)):
-            await server.set(t, file_list[i], file_list[i])
+            with open(file_list[i], 'rb') as archivo:
+                content = archivo.read()
+            name_and_content = file_list[i] + content.decode('utf-8')
+            value = hashlib.md5(name_and_content.encode('utf-8')).hexdigest()
+            await server.set(t, file_list[i], value)
 
 async def add_tags(tag_query, tag_list, server):
     response = await get_fileIds(tag_query, server)
