@@ -33,11 +33,14 @@ def send_file_in_parts(ip, port, name):
     client_tcp.close()
 
 async def send_file(ip, port, name):
+    finished = False
     client_tcp = rpyc.connect(ip, port)
     with open(name, "rb") as f:
         contents = f.read()
         client_tcp.root.fileWriter(contents, name, 'l')
+        finished = True
     client_tcp.close()
+    return finished
 
 async def download(ip, port, name):
     client_tcp = rpyc.connect(ip, port)
