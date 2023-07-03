@@ -140,13 +140,14 @@ async def list(tag_query, server, prt = True):
 async def get(tag_query, server):
     info, nodes_per_value = await list(tag_query, server)
     for key in nodes_per_value.keys():
-        _, _, name = pickle.loads(key)
+        value, _, name = pickle.loads(key)
+        value = pickle.loads(value)
         nodes = nodes_per_value[key]
         for node in nodes:
             node = node.split(':')
             ip = node[0]
             port = node[1]
-            succes = await download(ip, int(port), name)
+            succes = await download(ip, int(port), name, value)
             if succes:
                 break
 

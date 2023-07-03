@@ -1,4 +1,5 @@
 import rpyc
+import os 
 
 def divide_file(file_path, chunk_size):
     """
@@ -32,22 +33,55 @@ def send_file_in_parts(ip, port, name):
             client_tcp.root.fileWriter(contents, part, 'l')
     client_tcp.close()
 
-async def send_file(ip, port, name):
+# async def send_file(ip, port, name):
+#     finished = False
+#     client_tcp = rpyc.connect(ip, port)
+#     with open(name, "rb") as f:
+#         contents = f.read()
+#         client_tcp.root.fileWriter(contents, name, 'l')
+#         finished = True
+#     client_tcp.close()
+#     return finished
+
+async def send_file(ip, port, name, tag, value):
     finished = False
     client_tcp = rpyc.connect(ip, port)
     with open(name, "rb") as f:
         contents = f.read()
-        client_tcp.root.fileWriter(contents, name, 'l')
+        client_tcp.root.fileWriter(contents, name, tag, value)
         finished = True
     client_tcp.close()
     return finished
 
-async def download(ip, port, name):
+# async def download(ip, port, name):
+#     client_tcp = rpyc.connect(ip, port)
+#     content = client_tcp.root.download(name)
+#     if content == 'NF':
+#         return False
+#     with open('secure/'+name, "wb") as f:
+#         f.write(content)  
+#     client_tcp.close()
+#     return True
+
+async def download(ip, port, name, value):
     client_tcp = rpyc.connect(ip, port)
-    content = client_tcp.root.download(name)
+    content = client_tcp.root.download(name, value)
     if content == 'NF':
         return False
-    with open('secure/'+name, "wb") as f:
+    ################################################
+    f = os.listdir("download")
+    if any(name in filenames for filenames in f):  
+        i = 1
+        while True:
+            new_name = name.split('.')[0] + str(i) + '.' + name.split('.')[1]
+            if not any(new_name in filenames for filenames in f): 
+                name = new_name
+                break
+            i += 1
+
+
+    ################################################
+    with open('download/'+name, "wb") as f:
         f.write(content)  
     client_tcp.close()
     return True

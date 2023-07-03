@@ -98,8 +98,8 @@ class KademliaProtocol(RPCProtocol):
         address = (node_to_ask.ip, node_to_ask.port)
         result = await self.store(address, self.source_node.id,dkey, key, name, value, hash)
         if result[0] and name:
-            file_result = await send_file(node_to_ask.ip, node_to_ask.port,name)
-            result = result and file_result
+            file_result = await send_file(node_to_ask.ip, node_to_ask.port,name, key, value)
+            # result = result and file_result
         return self.handle_call_response(result, node_to_ask)
 
     async def call_delete(self, node_to_ask, key):
