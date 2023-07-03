@@ -86,7 +86,7 @@ async def download(ip, port, name, value):
     client_tcp.close()
     return True
 
-async def delete_file(ip, port, name):
+async def delete_file(ip, port, name, value):
     client_tcp = rpyc.connect(ip, port)
-    client_tcp.root.delete(name)
+    client_tcp.root.delete(name, value)
     client_tcp.close()

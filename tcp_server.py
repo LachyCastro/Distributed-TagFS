@@ -94,9 +94,9 @@ class Service(rpyc.Service):
     def exposed_disp_list(self):
         return os.listdir("secure")
     
-    def exposed_delete(self, fname):
+    def exposed_delete(self, fname, value):
         try:
-            os.remove("secure/"+fname)
+            os.remove("secure/"+value + '|' + fname)
         except:
             pass
   

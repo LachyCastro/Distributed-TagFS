@@ -168,7 +168,8 @@ async def delete(tag_query, server):
         await server.delete(f, False)
 
     for key in nodes_per_value.keys():
-        _, _, name = pickle.loads(key)
+        value, _, name = pickle.loads(key)
+        value = pickle.loads(value)
         nodes = nodes_per_value[key]
         for node in nodes:
             node = node.split(':')
