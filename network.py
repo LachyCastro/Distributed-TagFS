@@ -32,6 +32,7 @@ class Server:
         self.protocol = None
         self.refresh_loop = None
         self.save_state_loop = None
+        self.is_client = False
 
     def stop(self):
         if self.transport is not None:
@@ -56,7 +57,10 @@ class Server:
         self.transport, self.protocol = await listen
         # finally, schedule refreshing table
         self.refresh_table()
-        self.collect_garbage()
+        if self.is_client:
+            loop = asyncio.get_event_loop()
+            self.refresh_loop = loop.call_later(60, self.collect_garbage)
+        
 
     def collect_garbage(self):
         log.debug("Collecting garbage")
@@ -66,7 +70,8 @@ class Server:
 
     async def _collect_garbage(self):
         filenames = os.listdir("secure")
-
+        if 'state.json' in filenames:
+            filenames.remove('state.json')
         for f in filenames:
             splitted_f= f.split('|')
             hash_val_cont= digest(splitted_f[0])
@@ -94,8 +99,8 @@ class Server:
 
         await asyncio.gather(*results)
 
-        for dkey, value in self.storage.iter_older_than(3600):
-            await self.set_digest(dkey, value)
+        # for dkey, value in self.storage.iter_older_than(3600):
+        #     await self.set_digest(dkey, value)
 
     async def bootstrappable_neighbors(self):
         neighbors = self.protocol.router.find_neighbors(self.node)

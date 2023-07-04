@@ -31,15 +31,15 @@ def run(ip, port):
         os.execvp(inst[0], inst)
 
     #############load state################## 
-    try:
-        with open("secure/state.json", "r") as f:
-            data_dict = json.load(f)
-        for key in data_dict.keys():
-            print(type(key),flush=True)
-            add = Add([key], data_dict[key])
-            loop.run_until_complete(add.execute(server))
-    except:
-        pass
+    # try:
+    #     with open("secure/state.json", "r") as f:
+    #         data_dict = json.load(f)
+    #     for key in data_dict.keys():
+    #         print(type(key),flush=True)
+    #         add = Add([key], data_dict[key])
+    #         loop.run_until_complete(add.execute(server))
+    # except:
+    #     pass
     ###########################################
     try:
         loop.run_forever()
