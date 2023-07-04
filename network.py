@@ -3,6 +3,7 @@ import logging
 import pickle
 import random
 import sys
+import os
 
 sys.path.append('auxiliar/')
 sys.path.append('crawler/')
@@ -55,6 +56,26 @@ class Server:
         self.transport, self.protocol = await listen
         # finally, schedule refreshing table
         self.refresh_table()
+        self.collect_garbage()
+
+    def collect_garbage(self):
+        log.debug("Collecting garbage")
+        asyncio.ensure_future(self._collect_garbage())
+        loop = asyncio.get_event_loop()
+        self.refresh_loop = loop.call_later(60, self.collect_garbage)
+
+    async def _collect_garbage(self):
+        filenames = os.listdir("secure")
+
+        for f in filenames:
+            splitted_f= f.split('|')
+            hash_val_cont= digest(splitted_f[0])
+            if (len(splitted_f)!= 2) or (hash_val_cont not in self.storage.data_file.keys()):
+                try:
+                    os.remove("secure/"+f)
+                except:
+                    pass
+        
 
     def refresh_table(self):
         log.debug("Refreshing routing table")
