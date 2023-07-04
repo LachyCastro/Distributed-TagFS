@@ -148,6 +148,6 @@ lexer = lex.lex()
 parser = yacc.yacc()
 
 # Example usage
-input_str = 'get -q a b c'
-result = parser.parse(input_str)
-print(result)
+# input_str = 'add -f a b c -t r'
+# result = parser.parse(input_str)
+# print(result)

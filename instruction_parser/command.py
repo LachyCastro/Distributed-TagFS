@@ -181,8 +181,9 @@ class Get(Command):
     def __init__(self, tags) -> None:
         self.tags = tags
     async def execute(self, server, prt = True):
+        print('Executing get')
         list = List(self.tags)
-        info, nodes_per_value = await list.execute(self.tags, server)
+        info, nodes_per_value = await list.execute(server)
         for key in nodes_per_value.keys():
             _, _, name = pickle.loads(key)
             nodes = nodes_per_value[key]
@@ -190,7 +191,7 @@ class Get(Command):
                 node = node.split(':')
                 ip = node[0]
                 port = node[1]
-                succes = await download(ip, int(port), name)
-                if succes:
+                success = await download(ip, int(port), name)
+                if success:
                     break
 
