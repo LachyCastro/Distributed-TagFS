@@ -174,7 +174,7 @@ class Server:
         # if this node is close too, then store here as well
         biggest = max([n.distance_to(node) for n in nodes])
         if self.node.distance_to(node) < biggest:
-            if await send_file(self.node.ip, self.node.port,name):
+            if await send_file(self.node.ip, self.node.port, name, key, value):
                 self.storage.set(dkey, key, name , value, hash)
         results = [self.protocol.call_store(n, dkey, key, name, value, hash) for n in nodes]
         # return true only if at least one store call succeeded
