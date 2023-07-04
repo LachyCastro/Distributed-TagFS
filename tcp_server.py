@@ -96,7 +96,7 @@ class Service(rpyc.Service):
     
     def exposed_delete(self, fname, value):
         try:
-            os.remove("secure/"+value + '|' + fname)
+            os.remove("secure/"+ value + '|' + fname)
         except:
             pass
   
