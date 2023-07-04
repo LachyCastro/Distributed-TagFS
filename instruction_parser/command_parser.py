@@ -18,6 +18,7 @@ class CommandParser:
             raise Exception('syntax error: unknown command %s', inst[0])
 
     def _parse_add(self, args):
+        print('Executing parse_add')
         if '-f' in args and '-t' in args:
             try:
                 idx = args.index('-t')

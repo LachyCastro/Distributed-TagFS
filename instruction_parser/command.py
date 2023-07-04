@@ -83,6 +83,7 @@ class Add(Command):
         self.files = files
         self.tags = tags
     async def execute(self, server, prt = True):
+        print('Executing add')
         for t in self.tags:
             for i in range(len(self.files)):
                 await server.set(t, self.files[i], self.files[i])

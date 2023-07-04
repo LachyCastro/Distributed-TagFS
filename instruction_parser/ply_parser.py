@@ -125,7 +125,7 @@ def p_file_list(p):
     if len(p) == 2:
         p[0] = [p[1]]
     else:
-        p[0] = p[2].extend(p[1])
+        p[0] = p[2] + [p[1]]
 
 def p_tag_list(p):
     '''tag_list : WORD
@@ -133,7 +133,7 @@ def p_tag_list(p):
     if len(p) == 2:
         p[0] = [p[1]]
     else:
-        p[0] = p[2].extend(p[1])
+        p[0] = p[2] + [p[1]]
 
 def p_tag_query(p):
     '''tag_query : WORD
@@ -141,13 +141,13 @@ def p_tag_query(p):
     if len(p) == 2:
         p[0] = [p[1]]
     else:
-        p[0] = p[2].extend(p[1])
+        p[0] = p[2] + [p[1]]
 
 # Build the lexer and parser
 lexer = lex.lex()
 parser = yacc.yacc()
 
 # Example usage
-# input_str = 'get -q a'
-# result = parser.parse(input_str)
-# print(result)
+input_str = 'get -q a b c'
+result = parser.parse(input_str)
+print(result)
