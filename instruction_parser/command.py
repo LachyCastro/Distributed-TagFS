@@ -1,3 +1,4 @@
+import hashlib
 import os
 import pickle
 import sys
@@ -83,10 +84,13 @@ class Add(Command):
         self.files = files
         self.tags = tags
     async def execute(self, server, prt = True):
-        print('Executing add')
         for t in self.tags:
             for i in range(len(self.files)):
-                await server.set(t, self.files[i], self.files[i])
+                with open(self.files[i], 'rb') as file:
+                    content = file.read()
+                name_and_content = self.files[i] + content.decode('utf-8')
+                value = hashlib.md5(name_and_content.encode('utf-8')).hexdigest()
+                await server.set(t, self.files[i], value)
 
 class Delete(Command):
     def __init__(self, tags) -> None:
@@ -109,13 +113,14 @@ class Delete(Command):
             await server.delete(f, False)
 
         for key in nodes_per_value.keys():
-            _, _, name = pickle.loads(key)
+            value, _, name = pickle.loads(key)
+            value = pickle.loads(value)
             nodes = nodes_per_value[key]
             for node in nodes:
                 node = node.split(':')
                 ip = node[0]
                 port = node[1]
-                await delete_file(ip, int(port), name)
+                await delete_file(ip, int(port), name, value)
     
 class List(Command):
     def __init__(self, tags) -> None:
@@ -181,17 +186,17 @@ class Get(Command):
     def __init__(self, tags) -> None:
         self.tags = tags
     async def execute(self, server, prt = True):
-        print('Executing get')
         list = List(self.tags)
         info, nodes_per_value = await list.execute(server)
         for key in nodes_per_value.keys():
-            _, _, name = pickle.loads(key)
+            value, _, name = pickle.loads(key)
+            value = pickle.loads(value)
             nodes = nodes_per_value[key]
             for node in nodes:
                 node = node.split(':')
                 ip = node[0]
                 port = node[1]
-                success = await download(ip, int(port), name)
+                success = await download(ip, int(port), name, value)
                 if success:
                     break
 
