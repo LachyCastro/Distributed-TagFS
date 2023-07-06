@@ -56,7 +56,8 @@ class Server:
         self.transport, self.protocol = await listen
         # finally, schedule refreshing table
         self.refresh_table()
-        self.collect_garbage()
+        loop = asyncio.get_event_loop()
+        self.refresh_loop = loop.call_later(60, self.collect_garbage)
 
     def collect_garbage(self):
         log.debug("Collecting garbage")
@@ -201,37 +202,37 @@ class Server:
         # return true only if at least one store call succeeded
         return any(await asyncio.gather(*results))
 
-    def save_state(self, fname):
-        log.info("Saving state to %s", fname)
-        data = {
-            'ksize': self.ksize,
-            'alpha': self.alpha,
-            'id': self.node.id,
-            'neighbors': self.bootstrappable_neighbors()
-        }
-        if not data['neighbors']:
-            log.warning("No known neighbors, so not writing to cache.")
-            return
-        with open(fname, 'wb') as file:
-            pickle.dump(data, file)
+    # def save_state(self, fname):
+    #     log.info("Saving state to %s", fname)
+    #     data = {
+    #         'ksize': self.ksize,
+    #         'alpha': self.alpha,
+    #         'id': self.node.id,
+    #         'neighbors': self.bootstrappable_neighbors()
+    #     }
+    #     if not data['neighbors']:
+    #         log.warning("No known neighbors, so not writing to cache.")
+    #         return
+    #     with open(fname, 'wb') as file:
+    #         pickle.dump(data, file)
 
-    @classmethod
-    def load_state(cls, fname):
-        log.info("Loading state from %s", fname)
-        with open(fname, 'rb') as file:
-            data = pickle.load(file)
-        svr = Server(data['ksize'], data['alpha'], data['id'])
-        if data['neighbors']:
-            svr.bootstrap(data['neighbors'])
-        return svr
+    # @classmethod
+    # def load_state(cls, fname):
+    #     log.info("Loading state from %s", fname)
+    #     with open(fname, 'rb') as file:
+    #         data = pickle.load(file)
+    #     svr = Server(data['ksize'], data['alpha'], data['id'])
+    #     if data['neighbors']:
+    #         svr.bootstrap(data['neighbors'])
+    #     return svr
 
-    def save_state_regularly(self, fname, frequency=600):
-        self.save_state(fname)
-        loop = asyncio.get_event_loop()
-        self.save_state_loop = loop.call_later(frequency,
-                                               self.save_state_regularly,
-                                               fname,
-                                               frequency)
+    # def save_state_regularly(self, fname, frequency=600):
+    #     self.save_state(fname)
+    #     loop = asyncio.get_event_loop()
+    #     self.save_state_loop = loop.call_later(frequency,
+    #                                            self.save_state_regularly,
+    #                                            fname,
+    #                                            frequency)
 
 
 def check_dht_value_type(value):
