@@ -58,8 +58,11 @@ def t_Q(t):
 
 # Define the lexer rules
 def t_FILENAME(t):
-    r'[^\s/]+\.[a-zA-Z0-9_-]+'
-    return t
+    r'[^|\s/]+\.[a-zA-Z0-9_-]+'
+    if 'state.json' not in t.value:
+        return t
+    else:
+        print('Invalid name for json file.')
 
 def t_WORD(t):
     r'[a-zA-Z0-9_-]+'
@@ -148,6 +151,6 @@ lexer = lex.lex()
 parser = yacc.yacc()
 
 # Example usage
-# input_str = 'add -f a b c -t r'
+# input_str = 'add -f state.json -t r'
 # result = parser.parse(input_str)
 # print(result)
