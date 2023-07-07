@@ -7,7 +7,7 @@ from routing import RoutingTable
 
 sys.path.append('auxiliar/')
 from auxiliar.node import Node
-from auxiliar.tcp_utils import send_file
+from auxiliar.tcp_utils import send_file, download
 from auxiliar.utils import digest
 from protocol.rpc import RPCProtocol
 import pickle
@@ -42,6 +42,7 @@ class KademliaProtocol(RPCProtocol):
         log.debug("got a store request from %s, storing '%s'='%s'",
                   sender, dkey.hex(), value)
         self.storage.set(dkey, key, name, value, hash)
+        asyncio.ensure_future(download(sender[0], sender[1],name, value))
         return True
 
     def rpc_delete(self, sender, nodeid, key):
@@ -99,7 +100,7 @@ class KademliaProtocol(RPCProtocol):
         result = await self.store(address, self.source_node.id,dkey, key, name, value, hash)
         if result[0] and name:
             print(node_to_ask.ip, node_to_ask.port, name, key, value,'desde call store',flush=True)
-            file_result = await send_file(node_to_ask.ip, node_to_ask.port,name, key, value)
+            #file_result = await send_file(node_to_ask.ip, node_to_ask.port,name, key, value)
             # result = result and file_result
         return self.handle_call_response(result, node_to_ask)
 
