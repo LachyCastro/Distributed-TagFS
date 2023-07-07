@@ -57,7 +57,7 @@ class Server:
         self.transport, self.protocol = await listen
         # finally, schedule refreshing table
         self.refresh_table()
-        if self.is_client:
+        if not self.is_client:
             loop = asyncio.get_event_loop()
             self.refresh_loop = loop.call_later(60, self.collect_garbage)
         
