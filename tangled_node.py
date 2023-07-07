@@ -25,12 +25,12 @@ else:
 
 #############load state################## 
 # try:
-with open("secure/state.json", "r") as f:
-    data_dict = json.load(f)
-for key in data_dict.keys():
-    print(type(key),flush=True)
-    add = Add([key], data_dict[key])
-    loop.run_until_complete(add.execute(server))
+# with open("secure/state.json", "r") as f:
+#     data_dict = json.load(f)
+# for key in data_dict.keys():
+#     print(type(key),flush=True)
+#     add = Add([key], data_dict[key])
+#     loop.run_until_complete(add.execute(server))
 # except:
 #     pass
 ###########################################

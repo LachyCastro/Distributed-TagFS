@@ -10,7 +10,7 @@ from auxiliar.node import Node
 from auxiliar.tcp_utils import send_file
 from auxiliar.utils import digest
 from protocol.rpc import RPCProtocol
-
+import pickle
 log = logging.getLogger(__name__)
 
 
@@ -127,8 +127,14 @@ class KademliaProtocol(RPCProtocol):
                 new_node_close = node.distance_to(keynode) < last
                 first = neighbors[0].distance_to(keynode)
                 this_closest = self.source_node.distance_to(keynode) < first
-            if not neighbors or (new_node_close and this_closest):
-                asyncio.ensure_future(self.call_store(node, key, value))
+            if True:#not neighbors or (new_node_close and this_closest):
+                for value in  pickle.loads(values):
+                    file_value, tags, name= pickle.loads(self.storage.data_file[value][1])
+                    file_value = pickle.loads(file_value)
+                    tags = pickle.loads(tags)
+                    print(node.ip, node.port, 'aquiiiiiiii',flush=True)
+                    for tag in tags:
+                        asyncio.ensure_future(self.call_store(node, key, tag, name, file_value))
         self.router.add_contact(node)
 
     def handle_call_response(self, result, node):
