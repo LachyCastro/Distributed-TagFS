@@ -98,7 +98,8 @@ class KademliaProtocol(RPCProtocol):
 
     async def call_store(self, node_to_ask, dkey, key, name=None, value=None, hash=True):
         address = (node_to_ask.ip, node_to_ask.port)
-        if await send_file(node_to_ask.ip, node_to_ask.port, name, key, value) and hash:
+        if hash:
+            send_file(node_to_ask.ip, node_to_ask.port, name, key, value):
             result = await self.store(address, self.source_node.id,dkey, key, name, value, hash)
         else:
             result = await self.store(address, self.source_node.id,dkey, key, name, value, False)
