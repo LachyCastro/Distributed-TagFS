@@ -88,8 +88,8 @@ class Add(Command):
             for i in range(len(self.files)):
                 with open(self.files[i], 'rb') as file:
                     content = file.read()
-                name_and_content = self.files[i] + content.decode('utf-8')
-                value = hashlib.md5(name_and_content.encode('utf-8')).hexdigest()
+                name_and_content = self.files[i].encode() + content
+                value = hashlib.md5(name_and_content).hexdigest()
                 await server.set(t, self.files[i], value)
 
 class Delete(Command):
