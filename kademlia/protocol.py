@@ -119,6 +119,7 @@ class KademliaProtocol(RPCProtocol):
             return
 
         log.info("never seen %s before, adding to router", node)
+        results = []
         for key, values in self.storage:
             keynode = Node(digest(key))
             neighbors = self.router.find_neighbors(keynode)
@@ -134,7 +135,8 @@ class KademliaProtocol(RPCProtocol):
                     tags = pickle.loads(tags)
                     print(node.ip, node.port, 'aquiiiiiiii',flush=True)
                     for tag in tags:
-                        asyncio.ensure_future(self.call_store(node, key, tag, name, file_value))
+                        results.append(self.call_store(node, key, tag, name, file_value))
+        asyncio.gather(*results)
         self.router.add_contact(node)
 
     def handle_call_response(self, result, node):
