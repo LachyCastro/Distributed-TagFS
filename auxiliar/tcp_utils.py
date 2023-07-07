@@ -1,5 +1,6 @@
 import rpyc
 import os 
+import json
 
 def divide_file(file_path, chunk_size):
     """
@@ -67,6 +68,40 @@ async def download(ip, port, name, value):
         f.write(content)  
     client_tcp.close()
     return True
+
+async def download_file(ip, port, tag, filename, value):
+    client_tcp = rpyc.connect(ip, port)
+    contents = client_tcp.root.download(filename, value)
+    if contents == 'NF':
+        return False
+    filename = value + '|' + filename
+    f = os.listdir("secure")
+    # Verifying if files with the same name exist and giving it a new name
+    if any(filename in filenames for filenames in f):   
+        pass
+    else:
+        k = open("secure/"+ filename, "wb")
+        if k.mode == "wb":
+            k.write(contents)
+            print("\nThe file '"+filename+" has been transmitted to the SERVER successfully!\n",flush=True)
+        k.close()
+    #load json
+    try:
+        with open("secure/state.json", "r") as f:
+            data_dict = json.load(f)
+        try:
+            if not tag in data_dict[filename]:
+                data_dict[filename].append(tag)
+        except:
+            data_dict[filename] = [tag]
+        #update json
+        with open("secure/state.json", "w") as f:
+            json.dump(data_dict, f)
+    except:
+        data_dict = {}
+        data_dict[filename] = [tag]
+        with open("secure/state.json", "w") as f:
+            json.dump(data_dict, f)
 
 async def delete_file(ip, port, name, value):
     client_tcp = rpyc.connect(ip, port)
