@@ -42,7 +42,8 @@ class KademliaProtocol(RPCProtocol):
         log.debug("got a store request from %s, storing '%s'='%s'",
                   sender, dkey.hex(), value)
         self.storage.set(dkey, key, name, value, hash)
-        asyncio.ensure_future(download_file(sender[0], sender[1], key, name, value))
+        if not hash:
+            asyncio.ensure_future(send_file(sender[0], sender[1], name, key, value))
         return True
 
     def rpc_delete(self, sender, nodeid, key):
@@ -97,11 +98,10 @@ class KademliaProtocol(RPCProtocol):
 
     async def call_store(self, node_to_ask, dkey, key, name=None, value=None, hash=True):
         address = (node_to_ask.ip, node_to_ask.port)
-        result = await self.store(address, self.source_node.id,dkey, key, name, value, hash)
-        if result[0] and name:
-            print(node_to_ask.ip, node_to_ask.port, name, key, value,'desde call store',flush=True)
-            #file_result = await send_file(node_to_ask.ip, node_to_ask.port,name, key, value)
-            # result = result and file_result
+        if await send_file(node_to_ask.ip, node_to_ask.port, name, key, value) and hash:
+            result = await self.store(address, self.source_node.id,dkey, key, name, value, hash)
+        else:
+            result = await self.store(address, self.source_node.id,dkey, key, name, value, False)
         return self.handle_call_response(result, node_to_ask)
 
     async def call_delete(self, node_to_ask, key):
@@ -138,7 +138,7 @@ class KademliaProtocol(RPCProtocol):
                     print(node.ip, node.port, 'aquiiiiiiii',flush=True)
                     for tag in tags:
                         
-                        results.append(self.call_store(node, key, tag, name, file_value))
+                        results.append(self.call_store(node, key, tag, name, file_value, False))
         asyncio.gather(*results)
         self.router.add_contact(node)
 
