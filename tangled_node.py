@@ -24,15 +24,23 @@ else:
     os.execvp(inst[0], inst)
 
 #############load state################## 
-# try:
-# with open("secure/state.json", "r") as f:
-#     data_dict = json.load(f)
-# for key in data_dict.keys():
-#     print(type(key),flush=True)
-#     add = Add([key], data_dict[key])
-#     loop.run_until_complete(add.execute(server))
-# except:
-#     pass
+
+async def execute(files, tags, server,prt = True):
+        for t in tags:
+            for i in range(len(files)):
+                with open('secure/'+files[i], 'rb') as file:
+                    content = file.read()
+                name = files[i].split('|')[-1]
+                value = files[i].split('|')[0]
+                await server.set(t, name, value)
+#try:
+with open("secure/state.json", "r") as f:
+    data_dict = json.load(f)
+for key in data_dict.keys():
+    print(type(key),flush=True)
+    loop.run_until_complete(execute([key], data_dict[key], server))
+#except:
+#    pass
 ###########################################
 
 try:
