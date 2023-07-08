@@ -121,6 +121,8 @@ class KademliaProtocol(RPCProtocol):
         if not self.router.is_new_node(node):
             print(node," is not new", flush=True)
             return
+        
+        print(node," is new", flush=True)
 
         log.info("never seen %s before, adding to router", node)
         results = []
@@ -132,6 +134,10 @@ class KademliaProtocol(RPCProtocol):
                 new_node_close = node.distance_to(keynode) < last
                 first = neighbors[0].distance_to(keynode)
                 this_closest = self.source_node.distance_to(keynode) < first
+            
+            print(neighbors, " :neighbors")
+            print(node," node")
+            print(self.source_node," source node")
             if not neighbors or (new_node_close and this_closest):
                 for value in  pickle.loads(values):
                     file_value, tags, name= pickle.loads(self.storage.data_file[value][1])
@@ -139,6 +145,7 @@ class KademliaProtocol(RPCProtocol):
                     tags = pickle.loads(tags)
                     print(node.ip, node.port, 'aquiiiiiiii',flush=True)
                     for tag in tags:
+                        print("Call store with value: ", value, " tag: ", tag, flush=True)
                         results.append(self.call_store(node, key, tag, name, file_value,s_d=False, hash= True))
         asyncio.gather(*results)
         self.router.add_contact(node)
