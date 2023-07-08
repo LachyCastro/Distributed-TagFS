@@ -57,6 +57,21 @@ class Service(rpyc.Service):
     def exposed_delete(self, fname, value):
         try:
             os.remove("secure/"+ value + '|' + fname)
+            with open("secure/state.json", "r") as f:
+                data_dict = json.load(f)
+            del data_dict[value + '|' + fname]
+            with open("secure/state.json", "w") as f:
+                json.dump(data_dict, f)
+        except:
+            pass
+
+    def exposed_delete_tag(self, tags, fname, value):
+        try:
+            with open("secure/state.json", "r") as f:
+                data_dict = json.load(f)
+            data_dict[value + '|' + fname] = [tag for tag in data_dict[value + '|' + fname] if tag not in tags]
+            with open("secure/state.json", "w") as f:
+                json.dump(data_dict, f)
         except:
             pass
   

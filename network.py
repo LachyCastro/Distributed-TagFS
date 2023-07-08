@@ -4,6 +4,7 @@ import pickle
 import random
 import sys
 import os
+import json
 
 sys.path.append('auxiliar/')
 sys.path.append('crawler/')
@@ -72,14 +73,31 @@ class Server:
         filenames = os.listdir("secure")
         if 'state.json' in filenames:
             filenames.remove('state.json')
+        
+        with open("secure/state.json", "r") as _f:
+            data_dict = json.load(f)
+
         for f in filenames:
             splitted_f= f.split('|')
             hash_val_cont= digest(splitted_f[0])
             if (len(splitted_f)!= 2) or (hash_val_cont not in self.storage.data_file.keys()):
                 try:
                     os.remove("secure/"+f)
+                    del data_dict[f]
+                    with open("secure/state.json", "w") as _f:
+                        json.dump(data_dict, f)
+                    with open("secure/state.json", "r") as _f:
+                        data_dict = json.load(f)
                 except:
                     pass
+            else:
+                # If the file is in the storage, add tags from state.json if needed
+                _f,_t,_name= pickle.loads(self.storage.data_file[hash_val_cont][1])
+                tags= pickle.loads(_t)
+                tags_in_json= data_dict[f]
+                tags_to_add= [tag for tag in tags_in_json if tag not in tags]
+                for tag_item in tags_to_add:
+                    self.set(tag_item, _name, pickle.loads(_f), hash = True)
         
 
     def refresh_table(self):
@@ -203,8 +221,8 @@ class Server:
         if self.node.distance_to(node) < biggest:
             if await send_file(self.node.ip, self.node.port, name, key, value):
                 self.storage.set(dkey, key, name , value, hash)
-                
-        results = [self.protocol.call_store(n, dkey, key, name, value, hash) for n in nodes]
+
+        results = [self.protocol.call_store(n, dkey, key, name, value,s_d=True, hash=hash) for n in nodes]
         # return true only if at least one store call succeeded
         return any(await asyncio.gather(*results))
 

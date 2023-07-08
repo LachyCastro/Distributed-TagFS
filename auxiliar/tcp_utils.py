@@ -107,3 +107,9 @@ async def delete_file(ip, port, name, value):
     client_tcp = rpyc.connect(ip, port)
     client_tcp.root.delete(name, value)
     client_tcp.close()
+
+async def delete_tag(ip, port,tags, name, value):
+    client_tcp = rpyc.connect(ip, port)
+    client_tcp.root.delete_tag(tags,name, value)
+    client_tcp.close()
+

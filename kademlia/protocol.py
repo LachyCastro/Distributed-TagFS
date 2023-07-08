@@ -41,9 +41,9 @@ class KademliaProtocol(RPCProtocol):
         self.welcome_if_new(source)
         log.debug("got a store request from %s, storing '%s'='%s'",
                   sender, dkey.hex(), value)
-        self.storage.set(dkey, key, name, value, hash)
         if not s_d:
             asyncio.ensure_future(download_file(sender[0], sender[1], key, name, value))
+        self.storage.set(dkey, key, name, value, hash)
         return True
 
     def rpc_delete(self, sender, nodeid, key):
