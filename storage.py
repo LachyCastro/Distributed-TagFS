@@ -191,7 +191,9 @@ class FileStorage(Storage):
             # d = digest(value)
             if value in files:
                 files.remove(value)
-            self.data_tag[dkey] = (time.monotonic(), pickle.dumps(files))
+            if(len(files)>0):
+                self.data_tag[dkey] = (time.monotonic(), pickle.dumps(files))
+            else: del self.data_tag[dkey]
         if value in self.data_file:
             f, t, _ = pickle.loads(self.data_file[value][1])
             tags = pickle.loads(t)
@@ -202,7 +204,10 @@ class FileStorage(Storage):
                 # print('here---------------')
                 tags.remove(key)
                 # print(tags)
-                self.data_file[value] = (time.monotonic(), pickle.dumps((f, pickle.dumps(tags), _)))
+                if(len(tags)>0):
+                    self.data_file[value] = (time.monotonic(), pickle.dumps((f, pickle.dumps(tags), _)))
+                else:
+                    del self.data_file[value]
 
 
     def __repr__(self):
