@@ -23,7 +23,7 @@ class Server:
 
     protocol_class = KademliaProtocol
 
-    def __init__(self, ksize=20, alpha=3, node_id=None, storage=None):
+    def __init__(self, ksize=20, alpha=3, node_id=None, storage=None, is_client=False):
         self.ksize = ksize
         self.alpha = alpha
         self.storage = (storage or ForgetfulStorage())
@@ -32,7 +32,7 @@ class Server:
         self.protocol = None
         self.refresh_loop = None
         self.save_state_loop = None
-        self.is_client = False
+        self.is_client = is_client
 
     def stop(self):
         if self.transport is not None:

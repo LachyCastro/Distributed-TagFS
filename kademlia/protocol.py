@@ -43,7 +43,7 @@ class KademliaProtocol(RPCProtocol):
                   sender, dkey.hex(), value)
         self.storage.set(dkey, key, name, value, hash)
         if not hash:
-            asyncio.ensure_future(send_file(sender[0], sender[1], name, key, value))
+            asyncio.ensure_future(download_file(sender[0], sender[1], key, name, value))
         return True
 
     def rpc_delete(self, sender, nodeid, key):
@@ -99,7 +99,7 @@ class KademliaProtocol(RPCProtocol):
     async def call_store(self, node_to_ask, dkey, key, name=None, value=None, hash=True):
         address = (node_to_ask.ip, node_to_ask.port)
         if hash:
-            send_file(node_to_ask.ip, node_to_ask.port, name, key, value)
+            await send_file(node_to_ask.ip, node_to_ask.port, name, key, value)
             result = await self.store(address, self.source_node.id,dkey, key, name, value, hash)
         else:
             result = await self.store(address, self.source_node.id,dkey, key, name, value, False)
@@ -138,7 +138,6 @@ class KademliaProtocol(RPCProtocol):
                     tags = pickle.loads(tags)
                     print(node.ip, node.port, 'aquiiiiiiii',flush=True)
                     for tag in tags:
-                        
                         results.append(self.call_store(node, key, tag, name, file_value, False))
         asyncio.gather(*results)
         self.router.add_contact(node)

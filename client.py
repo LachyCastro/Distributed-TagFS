@@ -16,7 +16,7 @@ if __name__ == '__main__':
 
     
     loop = asyncio.get_event_loop()
-    server = Server(storage=FileStorage())
+    server = Server(storage=FileStorage(), is_client=True)
     loop.run_until_complete(server.listen(int(sys.argv[2]), sys.argv[1]))
     bootstrap_node = (sys.argv[3], int(sys.argv[4]))
     loop.run_until_complete(server.bootstrap([bootstrap_node]))
