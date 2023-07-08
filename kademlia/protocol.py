@@ -36,13 +36,13 @@ class KademliaProtocol(RPCProtocol):
         self.welcome_if_new(source)
         return self.source_node.id
 
-    def rpc_store(self, sender, nodeid, dkey, key, name, value, hash = True):
+    def rpc_store(self, sender, nodeid, dkey, key, name, value, s_d=True, hash = True):
         source = Node(nodeid, sender[0], sender[1])
         self.welcome_if_new(source)
         log.debug("got a store request from %s, storing '%s'='%s'",
                   sender, dkey.hex(), value)
         self.storage.set(dkey, key, name, value, hash)
-        if not hash:
+        if not s_d:
             asyncio.ensure_future(download_file(sender[0], sender[1], key, name, value))
         return True
 
@@ -96,13 +96,13 @@ class KademliaProtocol(RPCProtocol):
         result = await self.ping(address, self.source_node.id)
         return self.handle_call_response(result, node_to_ask)
 
-    async def call_store(self, node_to_ask, dkey, key, name=None, value=None, hash=True):
+    async def call_store(self, node_to_ask, dkey, key, name=None, value=None, s_d=True, hash=True):
         address = (node_to_ask.ip, node_to_ask.port)
-        if hash:
+        if s_d:
             await send_file(node_to_ask.ip, node_to_ask.port, name, key, value)
-            result = await self.store(address, self.source_node.id,dkey, key, name, value, hash)
+            result = await self.store(address, self.source_node.id,dkey, key, name, value,s_d, hash)
         else:
-            result = await self.store(address, self.source_node.id,dkey, key, name, value, False)
+            result = await self.store(address, self.source_node.id,dkey, key, name, value, s_d,hash)
         return self.handle_call_response(result, node_to_ask)
 
     async def call_delete(self, node_to_ask, key):
@@ -138,7 +138,7 @@ class KademliaProtocol(RPCProtocol):
                     tags = pickle.loads(tags)
                     print(node.ip, node.port, 'aquiiiiiiii',flush=True)
                     for tag in tags:
-                        results.append(self.call_store(node, key, tag, name, file_value, False))
+                        results.append(self.call_store(node, key, tag, name, file_value,s_d=False, hash= True))
         asyncio.gather(*results)
         self.router.add_contact(node)
 
