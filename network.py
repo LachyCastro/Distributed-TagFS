@@ -59,8 +59,8 @@ class Server:
         # finally, schedule refreshing table
         self.refresh_table()
         if not self.is_client:
-            loop = asyncio.get_event_loop()
-            self.refresh_loop = loop.call_later(60, self.collect_garbage)
+          loop = asyncio.get_event_loop()
+          self.refresh_loop = loop.call_later(60, self.collect_garbage)
         
 
     def collect_garbage(self):
@@ -90,7 +90,7 @@ class Server:
                     del data_dict[f]
                 except: pass
             else:
-                # If the file is in the storage, add tags from state.json if needed
+                # If the file is in the storage but not in the network, remove tags from state.json. 
                 _f,_t,_name= pickle.loads(self.storage.data_file[hash_val_cont][1])
                 
                 tags= pickle.loads(_t)

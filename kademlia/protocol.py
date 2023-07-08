@@ -119,6 +119,7 @@ class KademliaProtocol(RPCProtocol):
 
     def welcome_if_new(self, node):
         if not self.router.is_new_node(node):
+            print(node," is not new", flush=True)
             return
 
         log.info("never seen %s before, adding to router", node)
@@ -131,7 +132,7 @@ class KademliaProtocol(RPCProtocol):
                 new_node_close = node.distance_to(keynode) < last
                 first = neighbors[0].distance_to(keynode)
                 this_closest = self.source_node.distance_to(keynode) < first
-            if True: # not neighbors or (new_node_close and this_closest):
+            if not neighbors or (new_node_close and this_closest):
                 for value in  pickle.loads(values):
                     file_value, tags, name= pickle.loads(self.storage.data_file[value][1])
                     file_value = pickle.loads(file_value)
