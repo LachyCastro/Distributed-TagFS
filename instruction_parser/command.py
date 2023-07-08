@@ -11,7 +11,7 @@ root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, root_dir)
 
 sys.path.append('auxiliar/')
-from auxiliar.tcp_utils import delete_file, download
+from auxiliar.tcp_utils import delete_file, download, delete_tag
 from auxiliar.utils import infix_postfix, ops
 
 
