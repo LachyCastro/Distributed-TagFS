@@ -195,6 +195,7 @@ class Server:
         spider = NodeSpiderCrawl(self.protocol, node, nearest,
                                  self.ksize, self.alpha)
         nodes = await spider.find()
+
         log.info("setting '%s' on %s", dkey.hex(), list(map(str, nodes)))
 
         # if this node is close too, then store here as well
@@ -202,6 +203,7 @@ class Server:
         if self.node.distance_to(node) < biggest:
             if await send_file(self.node.ip, self.node.port, name, key, value):
                 self.storage.set(dkey, key, name , value, hash)
+                
         results = [self.protocol.call_store(n, dkey, key, name, value, hash) for n in nodes]
         # return true only if at least one store call succeeded
         return any(await asyncio.gather(*results))

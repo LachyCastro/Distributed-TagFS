@@ -100,7 +100,7 @@ class ForgetfulStorage(Storage):
 class FileStorage(Storage):
 
     def __init__(self, ttl=604800):
-        self.data_tag = OrderedDict()
+        self.data_tag = OrderedDict() 
         self.data_file = OrderedDict()
         self.max_age = ttl
 
@@ -134,10 +134,10 @@ class FileStorage(Storage):
         self.data_file[key] = (time.monotonic(), pickle.dumps(value))
         """
         if key in self.data_file:
-            f,t,_ = pickle.loads(self.data_file[key][1])
+            f,t,_name = pickle.loads(self.data_file[key][1])
             tags = pickle.loads(t)
             tags.add(tag)
-            self.data_file[key] = (time.monotonic(), pickle.dumps((f, pickle.dumps(tags),_)))
+            self.data_file[key] = (time.monotonic(), pickle.dumps((f, pickle.dumps(tags),_name)))
         else:
             tags = set()
             tags.add(tag)

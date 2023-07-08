@@ -29,7 +29,7 @@ class Service(rpyc.Service):
                 data_dict = json.load(f)
             try:
                 if not tag in data_dict[name]:
-                    data_dict[filename].append(tag)
+                    data_dict[name].append(tag)
             except:
                 data_dict[name] = [tag]
             #update json
