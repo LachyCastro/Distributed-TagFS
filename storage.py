@@ -178,7 +178,8 @@ class FileStorage(Storage):
 
     def delete(self, key):
         self.cull()
-        del self.data_file[key]
+        if key in self.data_tag:
+            del self.data_tag[key]
 
     def delete_tag(self, dkey ,key, value):
         self.cull()

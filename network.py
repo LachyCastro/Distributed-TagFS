@@ -170,6 +170,7 @@ class Server:
         nearest = self.protocol.router.find_neighbors(node)
         if not nearest:
             log.warning("There are no known neighbors to get key %s", key)
+            print("There are no known neighbors to get key in server.delete %s", key, flush=True)
             return None
         spider = NodeSpiderCrawl(self.protocol, node, nearest, self.ksize, self.alpha)
         nodes = await spider.find()
