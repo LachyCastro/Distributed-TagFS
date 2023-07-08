@@ -70,12 +70,14 @@ class Server:
         self.refresh_loop = loop.call_later(60, self.collect_garbage)
 
     async def _collect_garbage(self):
+        print("Executing garbage collection", flush=True)
         filenames = os.listdir("secure")
+
         if 'state.json' in filenames:
             filenames.remove('state.json')
         
-        with open("secure/state.json", "r") as _f:
-            data_dict = json.load(f)
+        with open("secure/state.json", "r") as file:
+            data_dict = json.load(file)
 
         for f in filenames:
             splitted_f= f.split('|')
@@ -83,22 +85,23 @@ class Server:
             if (len(splitted_f)!= 2) or (hash_val_cont not in self.storage.data_file.keys()):
                 try:
                     os.remove("secure/"+f)
+                except: pass
+                try:
                     del data_dict[f]
-                    with open("secure/state.json", "w") as _f:
-                        json.dump(data_dict, f)
-                    with open("secure/state.json", "r") as _f:
-                        data_dict = json.load(f)
-                except:
-                    pass
+                except: pass
             else:
                 # If the file is in the storage, add tags from state.json if needed
                 _f,_t,_name= pickle.loads(self.storage.data_file[hash_val_cont][1])
+                
                 tags= pickle.loads(_t)
-                tags_in_json= data_dict[f]
-                tags_to_add= [tag for tag in tags_in_json if tag not in tags]
-                for tag_item in tags_to_add:
-                    self.set(tag_item, _name, pickle.loads(_f), hash = True)
-        
+
+                print(list(tags), "tags from network to list")
+                print(data_dict[f], "data_dict", flush=True)
+                data_dict[f]= list(tags)
+
+        with open("secure/state.json", "w") as file:
+            json.dump(data_dict, file)
+
 
     def refresh_table(self):
         log.debug("Refreshing routing table")
