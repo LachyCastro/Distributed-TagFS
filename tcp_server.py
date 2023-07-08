@@ -29,7 +29,7 @@ class Service(rpyc.Service):
                 data_dict = json.load(f)
             try:
                 if not tag in data_dict[name]:
-                    data_dict[filename].append(tag)
+                    data_dict[name].append(tag)
             except:
                 data_dict[name] = [tag]
             #update json
@@ -59,7 +59,17 @@ class Service(rpyc.Service):
             os.remove("secure/"+ value + '|' + fname)
         except:
             pass
-  
+    
+    def exposed_delete_tag(self, tags, fname, value):
+        try:
+            with open("secure/state.json", "r") as f:
+                data_dict = json.load(f)
+            if value + '|' + fname in data_dict.keys():
+                data_dict[value + '|' + fname] = [tag for tag in data_dict[value + '|' + fname] if tag not in tags]
+            with open("secure/state.json", "w") as f:
+                json.dump(data_dict, f)
+        except:
+            pass
 
 if __name__ == "__main__":
     # Create a Secure folder which can only be accessed by the Server
