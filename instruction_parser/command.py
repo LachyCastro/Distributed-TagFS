@@ -83,6 +83,7 @@ class Add(Command):
     def __init__(self, files, tags) -> None:
         self.files = files
         self.tags = tags
+        self.tags.append('*')
     async def execute(self, server, prt = True):
         for t in self.tags:
             for i in range(len(self.files)):
@@ -138,7 +139,7 @@ class List(Command):
                 if not l and prt:
                     print('No results')
                     return
-                f, tags, name = pickle.loads(l) 
+                f, tags, name = pickle.loads(l)
 
                 to_return.append((name, pickle.loads(f)))
                 

@@ -18,8 +18,12 @@ tokens = (
     'GET',
     'F',
     'T',
-    'Q'
+    'Q',
+    'STAR'
 )
+
+
+
 def t_ADD_TAGS(t):
     r'add-tags'
     return t
@@ -58,7 +62,7 @@ def t_Q(t):
 
 # Define the lexer rules
 def t_FILENAME(t):
-    r'[^|\s/]+\.[a-zA-Z0-9_-]+'
+    r'[^|\s/\*]+\.[a-zA-Z0-9_-]+'
     if 'state.json' not in t.value:
         return t
     else:
@@ -66,6 +70,10 @@ def t_FILENAME(t):
 
 def t_WORD(t):
     r'[a-zA-Z0-9_-]+'
+    return t
+
+def t_STAR(t):
+    r'\*'
     return t
 
 t_ignore  = ' \t'
@@ -94,19 +102,19 @@ def p_add_inst(p):
     p[0] = Add(file_list, tag_list)
 
 def p_query_inst(p):
-    'query_inst : inst Q tag_query'
+    'query_inst : inst Q tag_query_or_star'
     command = p[1]
     tag_query = p[3]
     p[0] = command(tag_query)
 
 def p_add_tags_inst(p):
-    'add_tags_inst : ADD_TAGS Q tag_query T tag_list'
+    'add_tags_inst : ADD_TAGS Q tag_query_or_star T tag_list'
     tag_query = p[3]
     tag_list = p[5]
     p[0] = AddTags(tag_query, tag_list)
 
 def p_delete_tags_inst(p):
-    'delete_tags_inst : DELETE_TAGS Q tag_query T tag_list'
+    'delete_tags_inst : DELETE_TAGS Q tag_query_or_star T tag_list'
     tag_query = p[3]
     tag_list = p[5]
     p[0] = DeleteTags(tag_query, tag_list)
@@ -138,6 +146,15 @@ def p_tag_list(p):
     else:
         p[0] = p[2] + [p[1]]
 
+def p_tag_query_or_star(p):
+    '''tag_query_or_star : STAR
+                         | tag_query
+    '''
+    if p[1] == '*':
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1]
+
 def p_tag_query(p):
     '''tag_query : WORD
                  | WORD tag_query'''
@@ -151,6 +168,6 @@ lexer = lex.lex()
 parser = yacc.yacc()
 
 # Example usage
-# input_str = 'add -f state.json -t r'
+# input_str = 'get -q *'
 # result = parser.parse(input_str)
 # print(result)
