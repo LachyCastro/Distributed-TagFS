@@ -36,7 +36,6 @@ class Command(ABC):
                 return file_ids
             except:
                 return files
-
         else:
             stack = []
             for item in tokens:
@@ -155,16 +154,15 @@ class AddTags(Command):
         self.query = query
         self.tags = tags
     async def execute(self, server, prt = True):
-        response = await super().get_fileIds(self.query, server)
+        file_ids = await super().get_fileIds(self.query, server)
         for t in self.tags:
-            for f in response:
+            for f in file_ids:
                 try:
                     r, _ = await server.get(t, True)
                     r = pickle.loads(r)
                     if f not in r:
                         # print('not match')
                         await server.set(t, None ,f, False)
-
                 except:
                     l, _ = (await server.get(f, False))
                     # print(l)
