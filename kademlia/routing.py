@@ -135,10 +135,12 @@ class RoutingTable:
         return self.buckets[index].is_new_node(node)
 
     def add_contact(self, node):
+        print("Executing add contact", node)
         index = self.get_bucket_for(node)
         bucket = self.buckets[index]
 
         if bucket.add_node(node):
+            print("Contact added")
             return
 
         if bucket.has_in_range(self.node) or bucket.depth() % 5 != 0:

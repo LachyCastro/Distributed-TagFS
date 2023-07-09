@@ -86,8 +86,8 @@ class ValueSpiderCrawl(SpiderCrawl):
             # log.warning("Got multiple values for key %i: %s", self.node.long_id, str(values))
         value = value_counts.most_common(1)[0][0]
         peer = self.nearest_without_value.popleft()
-        if peer:
-            await self.protocol.call_store(peer, self.node.id, value)
+        # if peer:
+        #     await self.protocol.call_store(peer, self.node.id, value)
         return value
 
 
