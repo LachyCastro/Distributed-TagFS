@@ -5,7 +5,11 @@ import json
 import storage
 from network import Server
 sys.path.append('instruction_parser/')
+
 from instruction_parser.command import Add
+sys.path.append('auxiliar/')
+
+from auxiliar.utils import create_folders
 
 def run(ip, port):
     """
@@ -16,6 +20,10 @@ def run(ip, port):
     log.addHandler(handler)
     log.setLevel(logging.DEBUG)
     """
+
+    # Create a Secure folder which can only be accessed by the Server
+    create_folders()
+
     loop = asyncio.get_event_loop()
     loop.set_debug(True)
 

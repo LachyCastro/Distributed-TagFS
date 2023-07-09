@@ -77,20 +77,6 @@ class Service(rpyc.Service):
   
 
 if __name__ == "__main__":
-    # Create a Secure folder which can only be accessed by the Server
-    if not os.path.isdir("secure/"):
-        os.mkdir("secure", 0o700)
-        print("\nSecure Folder Created!\n")
-
-    # Create state.json file in secure folder if it does not exist
-    if not os.path.isfile("secure/state.json"):
-        with open("secure/state.json", "w") as f:
-            f.write("{}")
-        print("\nState file created!\n")
-
-
-    if not os.path.isdir("download/"):
-        os.mkdir("download", 0o700)
-        print("\nDownload Folder Created!\n")
+   
     t = ThreadedServer(Service, hostname= sys.argv[1], port=sys.argv[2])
     t.start()

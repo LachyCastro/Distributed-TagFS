@@ -6,9 +6,14 @@ import storage
 from network import Server
 sys.path.append('instruction_parser/')
 from instruction_parser.command import Add
+sys.path.append('auxiliar/')
+from auxiliar.utils import create_folders
+
 # Usage: <python3> <node_ip> <node_port> <bootstrap_node_ip> <bootstrap_node_port>
 loop = asyncio.get_event_loop()
 loop.set_debug(True)
+
+create_folders()
 
 client_node = (sys.argv[1], sys.argv[2])
 inst = ['python3', 'tcp_server.py', sys.argv[1], sys.argv[2]]

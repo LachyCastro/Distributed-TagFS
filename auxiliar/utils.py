@@ -1,5 +1,6 @@
 import asyncio
 import hashlib
+import os
 
 ops = ['or', 'and', 'not']
 prec = { 'and': 1, 'or': 1, 'not': 2, '(': 0, ')': 0 }
@@ -40,3 +41,19 @@ def infix_postfix(tokens):
     while stack:
         output.append(stack.pop())
     return output
+
+def create_folders():
+    if not os.path.isdir("secure/"):
+        os.mkdir("secure", 0o700)
+        print("\nSecure Folder Created!\n")
+
+    # Create state.json file in secure folder if it does not exist
+    if not os.path.isfile("secure/state.json"):
+        with open("secure/state.json", "w") as f:
+            f.write("{}")
+        print("\nState file created!\n")
+
+
+    if not os.path.isdir("download/"):
+        os.mkdir("download", 0o700)
+        print("\nDownload Folder Created!\n")

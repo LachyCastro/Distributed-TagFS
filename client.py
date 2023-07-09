@@ -9,14 +9,19 @@ from storage import FileStorage
 sys.path.append('instruction_parser/')
 from instruction_parser.ply_parser import parser
 
+sys.path.append('auxiliar/')
+
+from auxiliar.utils import create_folders
+
 if __name__ == '__main__':
     if len(sys.argv) != 5:
         print("Usage: python3 client.py <client ip> <client port > <bootstrap routing_node> <bootstrap routing_port>")
         sys.exit(1)
 
-    
+    create_folders()
     loop = asyncio.get_event_loop()
     server = Server(storage=FileStorage(), is_client=True)
+    
 
     client_node = (sys.argv[1], sys.argv[2])
     inst = ['python3', 'tcp_server.py', sys.argv[1], sys.argv[2]]
