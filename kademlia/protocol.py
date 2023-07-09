@@ -126,8 +126,14 @@ class KademliaProtocol(RPCProtocol):
         
         print(node," is new", flush=True)
 
+        if node.port%2 != 0:
+            print("is a client", node, flush=True)
+            self.router.add_contact(node)
+            return
+        
         log.info("never seen %s before, adding to router", node)
         results = []
+        
         for key, values in self.storage:
             print(key," key", flush=True)
             keynode = Node(digest(key))

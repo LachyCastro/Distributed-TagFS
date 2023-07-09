@@ -212,6 +212,8 @@ class Server:
         if not nearest:
             log.warning("There are no known neighbors to set key %s",
                         dkey.hex())
+            self.storage.set(dkey, key, name , value, hash)
+            
             return False
 
         spider = NodeSpiderCrawl(self.protocol, node, nearest,
