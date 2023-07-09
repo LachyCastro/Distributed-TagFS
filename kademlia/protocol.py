@@ -20,6 +20,7 @@ class KademliaProtocol(RPCProtocol):
         self.router = RoutingTable(self, ksize, source_node)
         self.storage = storage
         self.source_node = source_node
+        self.ksize= ksize
 
     def get_refresh_ids(self):
         ids = []
@@ -139,10 +140,8 @@ class KademliaProtocol(RPCProtocol):
             
             print(neighbors, " :neighbors", flush=True)
             print(node," node", flush=True)
-            for n in neighbors:
-                print(n,n.is_client, " is client", flush=True)
-            no_storage_nodes = all([n.is_client for n in neighbors])
-            if not neighbors or no_storage_nodes or (new_node_close and this_closest):
+            
+            if len(neighbors)< self.ksize or (new_node_close and this_closest):
                 for value in  pickle.loads(values):
                     file_value, tags, name= pickle.loads(self.storage.data_file[value][1])
                     file_value = pickle.loads(file_value)
