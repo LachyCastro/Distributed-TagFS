@@ -11,7 +11,7 @@ root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, root_dir)
 
 sys.path.append('auxiliar/')
-from auxiliar.tcp_utils import delete_file, download
+from auxiliar.tcp_utils import delete_file, download, delete_tag
 from auxiliar.utils import infix_postfix, ops
 
 
@@ -178,9 +178,22 @@ class DeleteTags(Command):
         self.tags = tags
     async def execute(self, server, prt = True):
         files = await super().get_fileIds(self.tags, server, False)
+        list = List(self.tags)
+        info, nodes_per_value = await list.execute(server, prt=False)
         for t in self.tags:
             for f in files:
                 await server.delete_tag(t, f)
+        
+        for key in nodes_per_value.keys():
+            value, _, name = pickle.loads(key)
+            value = pickle.loads(value)
+            nodes = nodes_per_value[key]
+            for node in nodes:
+                node = node.split(':')
+                ip = node[0]
+                port = node[1]
+                await delete_tag(ip, int(port),self.tags, name, value)
+
 
 class Get(Command):
     def __init__(self, tags) -> None:
