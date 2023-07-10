@@ -28,7 +28,7 @@ class Command(ABC):
         tokens = infix_postfix(tag_query)
 
         all_tags = set()
-        if 'not' in tag_query:
+        if '~' in tag_query:
             load_all_tags, nodes_per_values_all_tags = await server.get('*', True)
             if load_all_tags:
                 all_tags = pickle.loads(load_all_tags)
@@ -47,7 +47,7 @@ class Command(ABC):
             stack = []
             for item in tokens:
                 if item in ops:
-                    if item == 'not':
+                    if item == '~':
                         op = stack.pop()
                         if not op:
                             stack.append(all_tags)
@@ -57,7 +57,7 @@ class Command(ABC):
                         op1 = stack.pop()
                         op2 = stack.pop()
 
-                        if item == 'and':
+                        if item == '&':
 
                             if not op1 or not op2:
                                 stack.append(set())
@@ -81,8 +81,6 @@ class Command(ABC):
                         stack.append(set())
 
             result = stack.pop()
-            while stack:
-                result = result.intersection(stack.pop())
             
             if prt:
                 print("Get result:", end=" ")

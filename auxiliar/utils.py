@@ -2,8 +2,8 @@ import asyncio
 import hashlib
 import os
 
-ops = ['or', 'and', 'not']
-prec = { 'and': 1, 'or': 1, 'not': 2, '(': 0, ')': 0 }
+ops = ['||', '&', '~']
+prec = { '&': 1, '||': 1, '~': 2, '(': 0, ')': 0 }
 
 
 async def gather_dict(dic):
