@@ -119,15 +119,11 @@ class KademliaProtocol(RPCProtocol):
         return self.handle_call_response(result, node_to_ask)
 
     def welcome_if_new(self, node):
-        print(self.source_node," source node", flush=True)
         if not self.router.is_new_node(node):
-            print(node," is not new", flush=True)
             return
         
-        print(node," is new", flush=True)
 
         if node.port%2 != 0:
-            print("is a client", node, flush=True)
             self.router.add_contact(node)
             return
         
@@ -135,7 +131,6 @@ class KademliaProtocol(RPCProtocol):
         results = []
         
         for key, values in self.storage:
-            print(key," key", flush=True)
             keynode = Node(digest(key))
             neighbors = self.router.find_neighbors(keynode)
             if neighbors:
@@ -144,17 +139,14 @@ class KademliaProtocol(RPCProtocol):
                 first = neighbors[0].distance_to(keynode)
                 this_closest = self.source_node.distance_to(keynode) < first
             
-            print(neighbors, " :neighbors", flush=True)
-            print(node," node", flush=True)
-            
-            if len(neighbors)< self.ksize or (new_node_close and this_closest):
+            storage_neighbors=[n for n in neighbors if n.port%2 == 0]
+
+            if len(storage_neighbors)< self.ksize or (new_node_close and this_closest):
                 for value in  pickle.loads(values):
                     file_value, tags, name= pickle.loads(self.storage.data_file[value][1])
                     file_value = pickle.loads(file_value)
                     tags = pickle.loads(tags)
-                    print(node.ip, node.port, 'aquiiiiiiii',flush=True)
                     for tag in tags:
-                        print("Call store with value: ", value, " tag: ", tag, flush=True)
                         results.append(self.call_store(node, key, tag, name, file_value,s_d=False, hash= True))
         asyncio.gather(*results)
         self.router.add_contact(node)
