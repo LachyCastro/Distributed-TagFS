@@ -26,6 +26,13 @@ class Command(ABC):
     async def get_fileIds(self, tag_query, server, prt=False):
         files = []
         tokens = infix_postfix(tag_query)
+
+        all_tags = set()
+        if '~' in tag_query:
+            load_all_tags, nodes_per_values_all_tags = await server.get('*', True)
+            if load_all_tags:
+                all_tags = pickle.loads(load_all_tags)
+        
         if len(tokens) == 1:
             try:
                 l, nodes_per_values = await server.get(tokens[0], True)
@@ -40,19 +47,23 @@ class Command(ABC):
             stack = []
             for item in tokens:
                 if item in ops:
-                    if item == 'not':
-                        pass
+                    if item == '~':
+                        op = stack.pop()
+                        if not op:
+                            stack.append(all_tags)
+                        else:
+                            stack.append(all_tags.difference(op))
                     else:
                         op1 = stack.pop()
                         op2 = stack.pop()
 
-                        if item == 'and':
-                            # stack.append(op1 and op2)
+                        if item == '&':
+
                             if not op1 or not op2:
                                 stack.append(set())
                             stack.append(op1.intersection(op2))
                         else:
-                            # stack.append(op1 or op2)
+
                             if not op1 and op2:
                                 stack.append(op2)
                             elif op1 and not op2:
@@ -70,9 +81,7 @@ class Command(ABC):
                         stack.append(set())
 
             result = stack.pop()
-            # files = []
-            # for f in result:
-            #     files.append(pickle.loads(await server.get(f, False)))
+            
             if prt:
                 print("Get result:", end=" ")
                 print(result)
