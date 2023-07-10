@@ -19,10 +19,24 @@ tokens = (
     'F',
     'T',
     'Q',
-    'STAR'
+    'STAR',
+    'LPAREN',
+    'RPAREN',
+    'AND',
+    'OR',
+    'NOT'
 )
 
 
+t_LPAREN = r'\('
+
+t_RPAREN = r'\)'
+
+t_AND = r'&'
+
+t_OR = r'\|\|'
+
+t_NOT = r'\~'
 
 def t_ADD_TAGS(t):
     r'add-tags'
@@ -156,18 +170,31 @@ def p_tag_query_or_star(p):
         p[0] = p[1]
 
 def p_tag_query(p):
-    '''tag_query : WORD
-                 | WORD tag_query'''
+    '''tag_query : tag_query AND basic_tag_query
+                 | tag_query OR basic_tag_query
+                 | basic_tag_query
+    '''
+    if len(p) == 4:
+        p[0] = p[1] + [p[2]] + p[3]
+    else:
+        p[0] = p[1]
+
+def p_basic_tag_query(p):
+    '''basic_tag_query : NOT basic_tag_query
+                       | WORD
+                       | LPAREN tag_query RPAREN'''
     if len(p) == 2:
         p[0] = [p[1]]
+    elif len(p) == 3:
+        p[0] = [p[1]] + p[2]
     else:
-        p[0] = p[2] + [p[1]]
+        p[0] = [p[1]] + p[2] + [p[3]]
 
 # Build the lexer and parser
 lexer = lex.lex()
 parser = yacc.yacc()
 
 # Example usage
-# input_str = 'get -q *'
+# input_str = 'list -q ~ ( b & c ) || h'
 # result = parser.parse(input_str)
 # print(result)
