@@ -185,8 +185,8 @@ class DeleteTags(Command):
         self.query = query
         self.tags = tags
     async def execute(self, server, prt = True):
-        files = await super().get_fileIds(self.tags, server, False)
-        list = List(self.tags)
+        files = await super().get_fileIds(self.query, server, False)
+        list = List(self.query)
         info, nodes_per_value = await list.execute(server, prt=False)
         for t in self.tags:
             for f in files:
