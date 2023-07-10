@@ -67,6 +67,21 @@ Kademlia está estructurado para tener su propio protocolo que consta de un conj
 - Cuando un usuario busca archivos según etiquetas, el cliente envía una solicitud a uno de los nodos en la red para buscar archivos con la etiqueta especificada. El nodo luego devuelve una lista de archivos que coinciden con la etiqueta.
 - Cuando un usuario descarga un archivo, el cliente envía una solicitud al nodo que tiene el archivo. El nodo luego envía el archivo al cliente.
 
+#### Almacenamiento de datos
+
+Cuando un cliente desea subir un archivo a la red, primero se calcula el hash del archivo, que se forma a partir del nombre del archivo y su contenido. Esta técnica proporciona flexibilidad al sistema de ficheros al garantizar que los archivos con nombres diferentes pero contenido idéntico tengan el mismo hash. A continuación, se lleva el hash de cada etiqueta asociada al archivo al espacio de identificadores de Kademlia. El sistema busca los nodos más cercanos en este espacio de identificadores (a lo sumo k nodos), que se consideran propietarios de la etiqueta, y se les envía tanto el archivo como las etiquetas. 
+Los nodos almacenan los archivos y las etiquetas asociadas a ellos. Las etiquetas se almacenan en un diccionario donde se guardan las etiquetas y el conjunto de identificadores de los archivos asociados a cada una. Por otro lado, los archivos se almacenan en el sistema de archivos local del nodo y, a nivel de la red distribuida, se almacenan en un diccionario que tiene como llave el identificador del archivo y como valor una tupla que almacena las etiquetas asociadas al archivo, el hash de su contenido y su nombre.
+
+#### Búsqueda de datos
+
+Para buscar los valores asociados a una etiqueta en la red, el cliente comienza llevando al espacio de identificadores de Kademlia la etiqueta deseada y buscando los nodos más cercanos en la red. A partir de estos nodos, se explora la red utilizando un sistema de búsqueda en profundidad para encontrar los valores asociados a la etiqueta. Cuando se encuentra un valor asociado a la etiqueta, se almacena en una lista de valores encontrados. Después de explorar la red, se devuelve la lista de valores encontrados. Este proceso se puede extender para la búsqueda de valores asociados a una consulta compleja de etiquetas. En este caso, se buscan los valores asociados a cada una de las etiquetas de la consulta y luego se combinan según los operadores lógicos de la consulta.
+
+Para buscar valores en la red se implementó la clase ValueSpiderCrawl. La clase ValueSpiderCrawl tiene un método llamado find() que inicia la búsqueda de un valor. La búsqueda implica contactar a los nodos en la red y pedirles el valor asociado con una cierta clave. La búsqueda se realiza de manera en profundidad, comenzando desde los nodos más cercanos a la clave y expandiéndose hacia afuera. La clase ValueSpiderCrawl lleva un registro de los nodos que han sido contactados y los nodos que aún no han sido contactados. Si se contacta a un nodo y tiene el valor asociado con la clave, el valor se almacena en una lista llamada found_values. El nodo que tenía el valor también se almacena en una lista llamada found_nodes. Si se contacta a un nodo pero no tiene el valor, entonces los nodos más cercanos a ese nodo se añaden a la lista de nodos por visitar. Una vez que se han contactado todos los nodos, se analiza la lista found_values para determinar qué valor está asociado con la clave. Si no se encuentra ningún valor, la búsqueda se expande al siguiente conjunto de nodos. En general, la clase ValueSpiderCrawl proporciona una manera de buscar valores en una red Kademlia contactando a los nodos de manera en profundidad y manteniendo un registro de los nodos que han sido contactados y los valores asociados con la clave.
+
+Para la búsqueda de nodos en la red se implementó la clase NodeSpiderCrawl, que realiza un proceso similar, pero en lugar de almacenra los valores encontrados, almacena los nodos encontrados.
+
+#### Eliminación de datos
+
 #### Lenguaje de Comandos
 
 La clase `CommandParser` en `client.py` es responsable de analizar la entrada del usuario y generar un comando que puede ser ejecutado por el cliente.
