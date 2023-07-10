@@ -21,7 +21,6 @@ def run(ip, port):
     log.setLevel(logging.DEBUG)
     """
 
-    # Create a Secure folder which can only be accessed by the Server
     create_folders()
 
     loop = asyncio.get_event_loop()
